@@ -6,9 +6,11 @@
     <title>فلل الفخامة - عقارات فاخرة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-       <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -104,7 +106,6 @@
         .phones-list { margin-top: 10px; }
         .phones-list p { margin: 5px 0; }
         
-        /* لوحة التحكم */
         .admin-panel { background: linear-gradient(145deg, #1a1a2e, #0f0f1a); border: 2px solid var(--gold); border-radius: 25px; padding: 40px; width: 100%; max-width: 1400px; max-height: 90vh; overflow-y: auto; position: relative; }
         .admin-panel h2 { color: var(--gold); font-size: 32px; margin-bottom: 25px; text-align: center; }
         .login-form { max-width: 400px; margin: 0 auto; }
@@ -275,7 +276,6 @@
                     <button class="tab-btn" onclick="switchTab('bookings')"><i class="fas fa-list-ul"></i> الحجوزات</button>
                 </div>
                 
-                <!-- تبويب إدارة الفلل -->
                 <div id="villasTab" class="admin-tab active-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-edit"></i> تعديل الفلل</h3>
                     <div style="overflow-x:auto;">
@@ -284,10 +284,13 @@
                             <tbody id="villaTableBody"></tbody>
                         </table>
                     </div>
-                    <button class="save-btn" onclick="saveVillaChanges()"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button class="save-btn" onclick="saveVillaChanges()"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                        <button class="apply-btn" onclick="syncToFirebase()" style="background: linear-gradient(135deg, #22c55e, #16a34a);"><i class="fas fa-cloud-upload-alt"></i> حفظ في السحابة</button>
+                        <button class="apply-btn" onclick="syncFromFirebase()" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="fas fa-cloud-download-alt"></i> تحميل من السحابة</button>
+                    </div>
                 </div>
                 
-                <!-- تبويب إضافة فيلا -->
                 <div id="addTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-plus-circle"></i> إضافة فيلا جديدة</h3>
                     <div style="background:rgba(255,255,255,0.05); padding:25px; border-radius:20px;">
@@ -308,7 +311,6 @@
                     </div>
                 </div>
                 
-                <!-- تبويب تخصيص المظهر -->
                 <div id="appearanceTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-palette"></i> تخصيص الألوان</h3>
                     <div class="settings-grid-2">
@@ -333,23 +335,18 @@
                     <button class="reset-btn" onclick="resetAppearance()" style="margin-right:15px;"><i class="fas fa-undo-alt"></i> استرجاع الإعدادات الافتراضية</button>
                 </div>
                 
-                <!-- تبويب الخلفيات -->
                 <div id="imagesTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-images"></i> صور الخلفية (السلايدر)</h3>
-                    
                     <div class="hero-upload-area" onclick="document.getElementById('heroImageUpload').click()">
                         <i class="fas fa-cloud-upload-alt" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
                         <span>📸 اضغط لاختيار صور من جهازك (عدد غير محدود)</span>
                     </div>
                     <input type="file" id="heroImageUpload" multiple accept="image/*" style="display:none" onchange="handleHeroImageUpload(event)">
-                    
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
                         <input type="text" id="newHeroImageUrl" placeholder="أو أدخل رابط الصورة" style="flex:1; padding:12px; border-radius:10px; border:2px solid rgba(212,175,55,0.3); background:rgba(255,255,255,0.05); color:white;">
                         <button class="add-btn" style="margin-top:0;" onclick="addHeroImageByUrl()"><i class="fas fa-plus"></i> إضافة بالرابط</button>
                     </div>
-                    
                     <div class="hero-images-list" id="heroImagesList"></div>
-                    
                     <h3 style="color:var(--gold); margin:20px 0 15px;"><i class="fas fa-sliders-h"></i> إعدادات عرض الخلفيات</h3>
                     <div class="settings-grid-2">
                         <div class="form-group"><label>⏱️ سرعة تبديل الصور (ثانية): <span id="heroSpeedVal">6</span></label>
@@ -363,25 +360,20 @@
                         </div>
                     </div>
                     <button class="apply-btn" onclick="restartHeroSlideshow()" style="margin-top:10px;"><i class="fas fa-play"></i> إعادة تشغيل السلايدر</button>
-                    
                     <h3 style="color:var(--gold); margin:20px 0 15px;"><i class="fas fa-layer-group"></i> طبقة التغطية (Overlay)</h3>
                     <div class="settings-grid-2">
                         <div class="form-group"><label>الشفافية (%)</label><input type="range" id="overlayOpacity" min="0" max="100" value="50" onchange="updateOverlay()"></div>
                         <div class="form-group"><label>لون التغطية</label><input type="color" id="overlayColor" value="#000000" onchange="updateOverlay()"></div>
                     </div>
-                    
                     <button class="save-btn" onclick="saveImagesSettings()"><i class="fas fa-save"></i> حفظ إعدادات الصور</button>
                     <button class="reset-btn" onclick="resetImages()" style="margin-right:15px;"><i class="fas fa-undo-alt"></i> استرجاع الصور الافتراضية</button>
                 </div>
                 
-                <!-- تبويب سرعة تبديل صور الفلل -->
                 <div id="villaImagesTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-image"></i> إعدادات سرعة تبديل صور الفلل</h3>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-sliders-h"></i> سرعة التبديل لكل فيلا</h4>
                         <div id="villaSpeedControls" style="margin-bottom:20px;"></div>
-                        
                         <div class="settings-grid-2">
                             <div class="form-group">
                                 <label>🎯 الوضع العام</label>
@@ -396,7 +388,6 @@
                                 <input type="range" id="uniformSpeed" min="2" max="10" step="0.5" value="4" oninput="document.getElementById('uniformSpeedVal').innerText=this.value" onchange="applyUniformSpeed()">
                             </div>
                         </div>
-                        
                         <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
                             <button class="apply-btn" onclick="applyAllSpeedSettings()"><i class="fas fa-check-double"></i> تطبيق الإعدادات على جميع الفلل</button>
                             <button class="save-btn" onclick="restartAllVillaIntervals()" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="fas fa-play"></i> إعادة تشغيل التبديل</button>
@@ -404,20 +395,16 @@
                             <button class="add-btn" onclick="randomizeAllVillaImages()"><i class="fas fa-random"></i> تبديل عشوائي الآن</button>
                         </div>
                     </div>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-info-circle"></i> معلومات عن الفلل</h4>
                         <div id="villaImagesInfo" style="font-size:14px; line-height:1.8;"></div>
                     </div>
-                    
                     <button class="save-btn" onclick="saveVillaSpeedSettings()"><i class="fas fa-save"></i> حفظ الإعدادات</button>
                     <button class="reset-btn" onclick="resetVillaSpeedSettings()" style="margin-right:15px;"><i class="fas fa-undo-alt"></i> استرجاع الإعدادات الافتراضية</button>
                 </div>
                 
-                <!-- تبويب تخصيص النصوص -->
                 <div id="textsTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-font"></i> تخصيص نصوص الأزرار والموقع</h3>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fab fa-whatsapp"></i> نص زر واتساب</h4>
                         <div class="form-group">
@@ -425,7 +412,6 @@
                             <input type="text" id="whatsappBtnText" value="استفسار واتساب" oninput="updateButtonTextsAndSave()">
                         </div>
                     </div>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-map-marker-alt"></i> نص زر الموقع</h4>
                         <div class="form-group">
@@ -433,7 +419,6 @@
                             <input type="text" id="locationBtnText" value="الموقع" oninput="updateButtonTextsAndSave()">
                         </div>
                     </div>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-heading"></i> نصوص الموقع الرئيسية</h4>
                         <div class="form-group">
@@ -457,7 +442,6 @@
                             <input type="text" id="footerTextInput" value="نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية." oninput="updateMainTextsAndSave()">
                         </div>
                     </div>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-location-dot"></i> نصوص موقع الفوتر</h4>
                         <div class="form-group">
@@ -477,20 +461,16 @@
                             <input type="text" id="footerLocationLinkInput" value="https://www.google.com/maps/search/?api=1&query=37.1333,43.6167" onchange="updateFooterLocationLink()">
                         </div>
                     </div>
-                    
                     <button class="reset-btn" onclick="resetAllTexts()" style="margin-top:20px;"><i class="fas fa-undo-alt"></i> استرجاع جميع النصوص الافتراضية</button>
                 </div>
                 
-                <!-- تبويب أرقام الهاتف -->
                 <div id="phonesTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-phone-alt"></i> إدارة أرقام الهاتف</h3>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;">أرقام الهاتف المعروضة في الموقع</h4>
                         <div id="phonesListContainer"></div>
                         <button class="add-btn" onclick="addPhoneNumber()" style="margin-top:10px;"><i class="fas fa-plus"></i> إضافة رقم جديد</button>
                     </div>
-                    
                     <div class="villa-settings-card">
                         <h4 style="color:var(--gold); margin-bottom:15px;">رقم واتساب الرئيسي (للاستفسارات)</h4>
                         <div class="form-group">
@@ -498,12 +478,10 @@
                             <input type="text" id="whatsappMainNumber" value="9647503124874" oninput="updateWhatsappNumber()">
                         </div>
                     </div>
-                    
                     <button class="save-btn" onclick="savePhonesSettings()"><i class="fas fa-save"></i> حفظ أرقام الهاتف</button>
                     <button class="reset-btn" onclick="resetPhonesSettings()" style="margin-right:15px;"><i class="fas fa-undo-alt"></i> استرجاع الأرقام الافتراضية</button>
                 </div>
                 
-                <!-- تبويب الإعدادات العامة -->
                 <div id="settingsTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-cog"></i> الإعدادات العامة</h3>
                     <div class="settings-grid-2">
@@ -519,7 +497,6 @@
                     <button class="reset-btn" onclick="resetSettings()" style="margin-right:15px;"><i class="fas fa-undo-alt"></i> استرجاع الإعدادات الافتراضية</button>
                 </div>
                 
-                <!-- تبويب الحجوزات -->
                 <div id="bookingsTab" class="admin-tab">
                     <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fas fa-list-ul"></i> قائمة الحجوزات</h3>
                     <div id="bookingsListAdmin"></div>
@@ -531,8 +508,7 @@
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastText"></span></div>
 
 <script>
-// ======================== البيانات الأساسية ========================
-    // ======================== إعدادات Firebase ========================
+// ======================== إعدادات Firebase ========================
 const firebaseConfig = {
     apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
     authDomain: "sarsink-434ff.firebaseapp.com",
@@ -543,7 +519,6 @@ const firebaseConfig = {
     measurementId: "G-K1EF1X3WwZ"
 };
 
-// تهيئة Firebase
 let firestoreDB = null;
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) {
@@ -553,77 +528,57 @@ if (typeof firebase !== 'undefined') {
     console.log("✅ Firebase connected successfully");
 }
 
-// دالة لحفظ الفلل في Firebase
-async function syncPropertiesToFirebase() {
-    if (!firestoreDB) return;
+// دوال المزامنة مع Firebase
+async function syncToFirebase() {
+    if (!firestoreDB) { showToast("❌ Firebase غير متصل"); return; }
+    showToast("⏳ جاري الحفظ في السحابة...");
     try {
+        // حفظ الفلل
         for (const property of properties) {
             await firestoreDB.collection('properties').doc(property.id.toString()).set(property);
         }
-        console.log("✅ Properties synced to Firebase");
-    } catch (e) { console.error("Firebase sync error:", e); }
+        // حفظ الحجوزات
+        await firestoreDB.collection('settings').doc('bookings').set({ bookings: bookings });
+        // حفظ الإعدادات
+        await firestoreDB.collection('settings').doc('siteSettings').set({ settings: localStorage.getItem('siteSettings') || '{}' });
+        showToast("✅ تم حفظ جميع البيانات في السحابة");
+    } catch (e) {
+        console.error(e);
+        showToast("❌ خطأ في الحفظ: " + e.message);
+    }
 }
 
-// دالة لتحميل الفلل من Firebase
-async function syncPropertiesFromFirebase() {
-    if (!firestoreDB) return false;
+async function syncFromFirebase() {
+    if (!firestoreDB) { showToast("❌ Firebase غير متصل"); return; }
+    showToast("⏳ جاري التحميل من السحابة...");
     try {
-        const snapshot = await firestoreDB.collection('properties').get();
-        if (!snapshot.empty) {
+        // تحميل الفلل
+        const propsSnapshot = await firestoreDB.collection('properties').get();
+        if (!propsSnapshot.empty) {
             const loadedProps = [];
-            snapshot.forEach(doc => loadedProps.push(doc.data()));
+            propsSnapshot.forEach(doc => loadedProps.push(doc.data()));
             if (loadedProps.length > 0) {
                 properties = loadedProps;
                 saveProperties();
                 renderProperties();
                 renderAdminDashboard();
-                return true;
             }
         }
-        return false;
-    } catch (e) { console.error("Firebase load error:", e); return false; }
-}
-
-// دالة لحفظ الحجوزات في Firebase
-async function syncBookingsToFirebase() {
-    if (!firestoreDB) return;
-    try {
-        await firestoreDB.collection('settings').doc('bookings').set({ bookings: bookings });
-        console.log("✅ Bookings synced to Firebase");
-    } catch (e) { console.error(e); }
-}
-
-// دالة لتحميل الحجوزات من Firebase
-async function syncBookingsFromFirebase() {
-    if (!firestoreDB) return false;
-    try {
-        const doc = await firestoreDB.collection('settings').doc('bookings').get();
-        if (doc.exists && doc.data().bookings) {
-            bookings = doc.data().bookings;
+        // تحميل الحجوزات
+        const bookingsDoc = await firestoreDB.collection('settings').doc('bookings').get();
+        if (bookingsDoc.exists && bookingsDoc.data().bookings) {
+            bookings = bookingsDoc.data().bookings;
             saveBookings();
-            return true;
+            renderBookingsList();
         }
-        return false;
-    } catch (e) { console.error(e); return false; }
-}
-
-// دالة للمزامنة الكاملة
-async function fullSyncToCloud() {
-    await syncPropertiesToFirebase();
-    await syncBookingsToFirebase();
-    showToast("✅ تم حفظ جميع البيانات في السحابة");
-}
-
-async function fullSyncFromCloud() {
-    const propsLoaded = await syncPropertiesFromFirebase();
-    const bookingsLoaded = await syncBookingsFromFirebase();
-    if (propsLoaded || bookingsLoaded) {
-        renderProperties();
-        renderAdminDashboard();
-        renderBookingsList();
         showToast("✅ تم تحميل البيانات من السحابة");
+    } catch (e) {
+        console.error(e);
+        showToast("❌ خطأ في التحميل: " + e.message);
     }
 }
+
+// ======================== البيانات الأساسية ========================
 const defaultHeroImages = [
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
@@ -813,7 +768,6 @@ function resetPhonesSettings() {
 
 // ======================== تحميل الإعدادات ========================
 function loadAllSettings() {
-    // تحميل إعدادات المظهر
     const saved = localStorage.getItem('siteSettings');
     if (saved) {
         const s = JSON.parse(saved);
@@ -834,7 +788,6 @@ function loadAllSettings() {
         changeGlobalSpeedMode();
     }
     
-    // تحميل النصوص
     const savedTexts = localStorage.getItem('allTexts');
     if (savedTexts) {
         const t = JSON.parse(savedTexts);
@@ -851,10 +804,7 @@ function loadAllSettings() {
         if (t.footerLocationLink) { footerLocationLink = t.footerLocationLink; document.getElementById('footerLocationLinkInput').value = footerLocationLink; }
     }
     
-    // تحميل أرقام الهاتف
     loadPhonesSettings();
-    
-    // تحديث كل شيء
     updateAllTexts();
     renderProperties();
 }
@@ -875,7 +825,6 @@ function saveAllTexts() {
     };
     localStorage.setItem('allTexts', JSON.stringify(allTexts));
     
-    // تحديث المتغيرات
     whatsappBtnText = allTexts.whatsappBtnText;
     locationBtnText = allTexts.locationBtnText;
     siteTitle = allTexts.siteTitle;
@@ -888,7 +837,6 @@ function saveAllTexts() {
     footerLocationBtnText = allTexts.footerLocationBtnText;
     footerLocationLink = allTexts.footerLocationLink;
     
-    // تحديث الواجهة
     updateAllTexts();
     renderProperties();
 }
@@ -904,18 +852,9 @@ function updateAllTexts() {
     document.getElementById('footerLocationBtnText').innerText = footerLocationBtnText || 'فتح الموقع';
 }
 
-function updateButtonTextsAndSave() {
-    saveAllTexts();
-}
-
-function updateMainTextsAndSave() {
-    saveAllTexts();
-}
-
-function updateFooterTextsAndSave() {
-    saveAllTexts();
-}
-
+function updateButtonTextsAndSave() { saveAllTexts(); }
+function updateMainTextsAndSave() { saveAllTexts(); }
+function updateFooterTextsAndSave() { saveAllTexts(); }
 function updateFooterLocationLink() {
     footerLocationLink = document.getElementById('footerLocationLinkInput').value;
     saveAllTexts();
@@ -941,7 +880,6 @@ function resetAllTexts() {
     document.getElementById('footerSubLocationTextInput').value = 'منطقة زاويتا السياحية';
     document.getElementById('footerLocationBtnTextInput').value = 'فتح الموقع';
     document.getElementById('footerLocationLinkInput').value = 'https://www.google.com/maps/search/?api=1&query=37.1333,43.6167';
-    
     saveAllTexts();
     showToast('✅ تم استرجاع جميع النصوص الافتراضية');
 }
@@ -1675,6 +1613,5 @@ function scrollToSection(id) { document.getElementById(id).scrollIntoView({ beha
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeGallery(); closeAdmin(); } });
 window.addEventListener('DOMContentLoaded', init);
 </script>
-
 </body>
 </html>
