@@ -6,6 +6,9 @@
     <title>فلل الفخامة - عقارات فاخرة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+       <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -529,6 +532,98 @@
 
 <script>
 // ======================== البيانات الأساسية ========================
+    // ======================== إعدادات Firebase ========================
+const firebaseConfig = {
+    apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
+    authDomain: "sarsink-434ff.firebaseapp.com",
+    projectId: "sarsink-434ff",
+    storageBucket: "sarsink-434ff.firebasestorage.app",
+    messagingSenderId: "289267387027",
+    appId: "1:289267387027:web:d91a3cd86971e689385b66",
+    measurementId: "G-K1EF1X3WwZ"
+};
+
+// تهيئة Firebase
+let firestoreDB = null;
+if (typeof firebase !== 'undefined') {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    firestoreDB = firebase.firestore();
+    console.log("✅ Firebase connected successfully");
+}
+
+// دالة لحفظ الفلل في Firebase
+async function syncPropertiesToFirebase() {
+    if (!firestoreDB) return;
+    try {
+        for (const property of properties) {
+            await firestoreDB.collection('properties').doc(property.id.toString()).set(property);
+        }
+        console.log("✅ Properties synced to Firebase");
+    } catch (e) { console.error("Firebase sync error:", e); }
+}
+
+// دالة لتحميل الفلل من Firebase
+async function syncPropertiesFromFirebase() {
+    if (!firestoreDB) return false;
+    try {
+        const snapshot = await firestoreDB.collection('properties').get();
+        if (!snapshot.empty) {
+            const loadedProps = [];
+            snapshot.forEach(doc => loadedProps.push(doc.data()));
+            if (loadedProps.length > 0) {
+                properties = loadedProps;
+                saveProperties();
+                renderProperties();
+                renderAdminDashboard();
+                return true;
+            }
+        }
+        return false;
+    } catch (e) { console.error("Firebase load error:", e); return false; }
+}
+
+// دالة لحفظ الحجوزات في Firebase
+async function syncBookingsToFirebase() {
+    if (!firestoreDB) return;
+    try {
+        await firestoreDB.collection('settings').doc('bookings').set({ bookings: bookings });
+        console.log("✅ Bookings synced to Firebase");
+    } catch (e) { console.error(e); }
+}
+
+// دالة لتحميل الحجوزات من Firebase
+async function syncBookingsFromFirebase() {
+    if (!firestoreDB) return false;
+    try {
+        const doc = await firestoreDB.collection('settings').doc('bookings').get();
+        if (doc.exists && doc.data().bookings) {
+            bookings = doc.data().bookings;
+            saveBookings();
+            return true;
+        }
+        return false;
+    } catch (e) { console.error(e); return false; }
+}
+
+// دالة للمزامنة الكاملة
+async function fullSyncToCloud() {
+    await syncPropertiesToFirebase();
+    await syncBookingsToFirebase();
+    showToast("✅ تم حفظ جميع البيانات في السحابة");
+}
+
+async function fullSyncFromCloud() {
+    const propsLoaded = await syncPropertiesFromFirebase();
+    const bookingsLoaded = await syncBookingsFromFirebase();
+    if (propsLoaded || bookingsLoaded) {
+        renderProperties();
+        renderAdminDashboard();
+        renderBookingsList();
+        showToast("✅ تم تحميل البيانات من السحابة");
+    }
+}
 const defaultHeroImages = [
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
@@ -1581,28 +1676,5 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeGal
 window.addEventListener('DOMContentLoaded', init);
 </script>
 
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQjyCEHXbagGzEA5ein_Ih3VluHIsxyOo",
-    authDomain: "sarsink-434ff.firebaseapp.com",
-    projectId: "sarsink-434ff",
-    storageBucket: "sarsink-434ff.firebasestorage.app",
-    messagingSenderId: "289267387027",
-    appId: "1:289267387027:web:d91a3cd86971e689385b66",
-    measurementId: "G-K1EF1X3WWZ"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </body>
 </html>
