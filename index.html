@@ -24,7 +24,7 @@
             color: var(--white); overflow-x: hidden; line-height: 1.6;
         }
         .hero-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
-        .hero-slideshow img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .hero-slideshow img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease-in-out; }
         .hero-slideshow img.active { opacity: 1; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.7) 100%); z-index: -1; transition: all 0.3s; }
         
@@ -504,21 +504,32 @@
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastText"></span></div>
 
 <script>
-// ======================== إعدادات Firebase ========================
-const firebaseConfig = {
-    apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
-    authDomain: "sarsink-434ff.firebaseapp.com",
-    projectId: "sarsink-434ff",
-    storageBucket: "sarsink-434ff.firebasestorage.app",
-    messagingSenderId: "289267387027",
-    appId: "1:289267387027:web:d91a3cd86971e689385b66",
-    measurementId: "G-K1EF1X3WwZ"
-};
+// ======================== البيانات الثابتة (تظهر فوراً) ========================
+const defaultHeroImages = [
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80",
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
+];
 
-let db = null;
-let properties = [];
+const defaultImages = [
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
+];
+
+// بيانات افتراضية تظهر فوراً بدون انتظار
+let properties = [
+    { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, priceDisplay: "150,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: [...defaultImages], slideshowSpeed: 4 },
+    { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, priceDisplay: "200,000", bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: [...defaultImages], slideshowSpeed: 4 },
+    { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, priceDisplay: "120,000", bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: [...defaultImages], slideshowSpeed: 4 },
+    { id: 4, number: "فيلا ٤", locationName: "زاويتا - دهوك", price: 250000, priceDisplay: "250,000", bedrooms: 6, bathrooms: 5, guests: 12, visible: true, location: "https://www.google.com/maps?q=37.1450,43.6300", images: [...defaultImages], slideshowSpeed: 4 },
+    { id: 5, number: "فيلا ٥", locationName: "زاويتا - دهوك", price: 180000, priceDisplay: "180,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1300,43.6050", images: [...defaultImages], slideshowSpeed: 4 },
+    { id: 6, number: "فيلا ٦", locationName: "زاويتا - دهوك", price: 300000, priceDisplay: "300,000", bedrooms: 7, bathrooms: 6, guests: 14, visible: true, location: "https://www.google.com/maps?q=37.1500,43.6400", images: [...defaultImages], slideshowSpeed: 4 }
+];
+
 let bookings = [];
-let heroImages = [];
+let heroImages = [...defaultHeroImages];
 let tempImages = [];
 let imageIntervals = {};
 let currentImageIndex = {};
@@ -544,137 +555,22 @@ let sectionSubtitleText = "اختر الفيلا المثالية لإقامتك
 let footerMainText = "نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية.";
 const ADMIN_PASSWORD = "admin123";
 
-const defaultHeroImages = [
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
-    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80",
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
-];
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
+    authDomain: "sarsink-434ff.firebaseapp.com",
+    projectId: "sarsink-434ff",
+    storageBucket: "sarsink-434ff.firebasestorage.app",
+    messagingSenderId: "289267387027",
+    appId: "1:289267387027:web:d91a3cd86971e689385b66",
+    measurementId: "G-K1EF1X3WwZ"
+};
 
-const defaultImages = [
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
-];
+let db = null;
+let firebaseReady = false;
 
-const defaultProperties = [
-    { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, priceDisplay: "150,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, priceDisplay: "200,000", bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, priceDisplay: "120,000", bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 4, number: "فيلا ٤", locationName: "زاويتا - دهوك", price: 250000, priceDisplay: "250,000", bedrooms: 6, bathrooms: 5, guests: 12, visible: true, location: "https://www.google.com/maps?q=37.1450,43.6300", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 5, number: "فيلا ٥", locationName: "زاويتا - دهوك", price: 180000, priceDisplay: "180,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1300,43.6050", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 6, number: "فيلا ٦", locationName: "زاويتا - دهوك", price: 300000, priceDisplay: "300,000", bedrooms: 7, bathrooms: 6, guests: 14, visible: true, location: "https://www.google.com/maps?q=37.1500,43.6400", images: [...defaultImages], slideshowSpeed: 4 }
-];
-
-// تهيئة Firebase
-if (typeof firebase !== 'undefined') {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    db = firebase.firestore();
-    console.log("✅ Firebase connected");
-}
-
-// ======================== دوال Firebase الأساسية ========================
-async function loadAllData() {
-    if (!db) {
-        console.warn("⚠️ Firebase not ready, using default data");
-        properties = JSON.parse(JSON.stringify(defaultProperties));
-        bookings = [];
-        heroImages = [...defaultHeroImages];
-        renderAll();
-        return;
-    }
-    
-    showToast("⏳ جاري التحميل...");
-    try {
-        // تحميل الفلل
-        const propsSnapshot = await db.collection('properties').get();
-        if (!propsSnapshot.empty) {
-            properties = [];
-            propsSnapshot.forEach(doc => properties.push(doc.data()));
-            console.log("✅ Loaded", properties.length, "properties");
-        } else {
-            properties = JSON.parse(JSON.stringify(defaultProperties));
-            await savePropertiesToFirebase();
-        }
-        
-        // تحميل الحجوزات
-        const bookingsDoc = await db.collection('settings').doc('bookings').get();
-        if (bookingsDoc.exists && bookingsDoc.data().bookings) {
-            bookings = bookingsDoc.data().bookings;
-        } else {
-            bookings = [];
-        }
-        
-        // تحميل صور الخلفية
-        const heroDoc = await db.collection('settings').doc('heroImages').get();
-        if (heroDoc.exists && heroDoc.data().images) {
-            heroImages = heroDoc.data().images;
-        } else {
-            heroImages = [...defaultHeroImages];
-            await db.collection('settings').doc('heroImages').set({ images: heroImages });
-        }
-        
-        renderAll();
-        showToast("✅ تم تحميل البيانات");
-    } catch (e) {
-        console.error("Load error:", e);
-        showToast("⚠️ خطأ في التحميل");
-        properties = JSON.parse(JSON.stringify(defaultProperties));
-        renderAll();
-    }
-}
-
-async function savePropertiesToFirebase() {
-    if (!db) return;
-    for (const property of properties) {
-        await db.collection('properties').doc(property.id.toString()).set(property);
-    }
-}
-
-async function saveBookingsToFirebase() {
-    if (!db) return;
-    await db.collection('settings').doc('bookings').set({ bookings: bookings });
-}
-
-async function saveHeroImagesToFirebase() {
-    if (!db) return;
-    await db.collection('settings').doc('heroImages').set({ images: heroImages });
-}
-
-async function saveAllToFirebase() {
-    if (!db) {
-        showToast("❌ Firebase غير متصل");
-        return;
-    }
-    showToast("⏳ جاري الحفظ...");
-    try {
-        await savePropertiesToFirebase();
-        await saveBookingsToFirebase();
-        await saveHeroImagesToFirebase();
-        showToast("✅ تم حفظ جميع البيانات");
-        console.log("✅ All data saved to Firebase");
-    } catch (e) {
-        console.error("Save error:", e);
-        showToast("❌ خطأ في الحفظ");
-    }
-}
-
-// ======================== دوال العرض ========================
-function renderAll() {
-    renderProperties();
-    renderAdminDashboard();
-    renderBookingsList();
-    renderPhonesList();
-    renderHeroImagesList();
-    renderVillaSpeedControls();
-    updateVillaImagesInfo();
-    updateAllTexts();
-    initHeroSlideshow();
-}
-
-function renderProperties() {
+// عرض الموقع فوراً
+function renderPropertiesImmediately() {
     const grid = document.getElementById('propertiesGrid');
     if (!grid) return;
     
@@ -734,15 +630,139 @@ function renderProperties() {
     });
 }
 
-// ======================== إدارة الفلل (حفظ وتعديل) ========================
+function renderAdminDashboardImmediately() {
+    const visible = properties.filter(p => p.visible);
+    document.getElementById('totalVillas').textContent = properties.length;
+    document.getElementById('totalBookings').textContent = bookings.length;
+    document.getElementById('availableCount').textContent = visible.length - bookings.length;
+    document.getElementById('bookedCount').textContent = bookings.length;
+    
+    const tbody = document.getElementById('villaTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = properties.map(villa => {
+        const booked = bookings.some(b => b.villaId === villa.id);
+        const booking = bookings.find(b => b.villaId === villa.id);
+        return `<tr>
+            <td style="color:var(--gold);">${villa.number}</td>
+            <td><input type="text" class="location-input" data-id="${villa.id}" value="${villa.location || ''}" style="width:200px;"></td>
+            <td><input type="text" class="location-name-input" data-id="${villa.id}" value="${villa.locationName || ''}" style="width:120px;"></td>
+            <td><input type="number" class="price-input" data-id="${villa.id}" value="${villa.price}" step="1000" style="width:100px;"></td>
+            <td><input type="number" class="bedrooms-input" data-id="${villa.id}" value="${villa.bedrooms}" style="width:60px;"></td>
+            <td><input type="number" class="bathrooms-input" data-id="${villa.id}" value="${villa.bathrooms}" style="width:60px;"></td>
+            <td><input type="number" class="guests-input" data-id="${villa.id}" value="${villa.guests}" style="width:60px;"></td>
+            <td style="color:${booked ? 'var(--red)' : 'var(--green)'};">${booked ? 'محجوزة' : 'متاحة'}</td>
+            <td>${booked ? `<button class="btn-danger" onclick="adminCancelBooking(${booking.id})">إلغاء</button>` : `<button class="btn-gold" onclick="adminBookVilla(${villa.id})">حجز</button>`}</td>
+            <td><label class="toggle-switch"><input type="checkbox" class="visible-toggle" data-id="${villa.id}" ${villa.visible ? 'checked' : ''}><span class="toggle-slider"></span></label></td>
+            <td><button class="delete-villa-btn" onclick="deleteVilla(${villa.id})"><i class="fas fa-trash"></i> حذف</button></td>
+        </tr>`;
+    }).join('');
+}
+
+function renderPhonesListImmediately() {
+    const container = document.getElementById('phonesList');
+    if (container) container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
+}
+
+function updateAllTextsImmediately() {
+    const el = (id) => document.getElementById(id);
+    if (el('siteTitle')) el('siteTitle').textContent = siteTitle;
+    if (el('siteDescription')) el('siteDescription').textContent = siteDescription;
+    if (el('sectionTitle')) el('sectionTitle').textContent = sectionTitleText;
+    if (el('sectionSubtitle')) el('sectionSubtitle').textContent = sectionSubtitleText;
+    if (el('footerText')) el('footerText').textContent = footerMainText;
+    if (el('footerLocationText')) el('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
+    if (el('footerSubLocationText')) el('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
+    if (el('footerLocationBtnText')) el('footerLocationBtnText').innerText = footerLocationBtnText;
+}
+
+function initHeroSlideshowImmediately() {
+    if (heroInterval) clearInterval(heroInterval);
+    if (heroImages.length === 0) return;
+    const container = document.getElementById('heroSlideshow');
+    if (!container) return;
+    container.innerHTML = heroImages.map((img, i) => `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`).join('');
+    if (heroImages.length > 1) {
+        heroInterval = setInterval(() => {
+            const images = container.querySelectorAll('img');
+            if (images.length === 0) return;
+            images[heroImageIndex].classList.remove('active');
+            if (slideshowMode === 'sequential') heroImageIndex = (heroImageIndex + 1) % images.length;
+            else { let newIndex; do { newIndex = Math.floor(Math.random() * images.length); } while (images.length > 1 && newIndex === heroImageIndex); heroImageIndex = newIndex; }
+            images[heroImageIndex].classList.add('active');
+        }, heroSlideshowSpeed * 1000);
+    }
+}
+
+// ======================== Firebase Background Sync ========================
+function initFirebase() {
+    if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.firestore();
+        console.log("✅ Firebase connected");
+        loadFromFirebaseInBackground();
+    }
+}
+
+async function loadFromFirebaseInBackground() {
+    if (!db) return;
+    try {
+        const propsSnapshot = await db.collection('properties').get();
+        if (!propsSnapshot.empty) {
+            const loadedProps = [];
+            propsSnapshot.forEach(doc => loadedProps.push(doc.data()));
+            if (loadedProps.length > 0) {
+                properties = loadedProps;
+                renderPropertiesImmediately();
+                renderAdminDashboardImmediately();
+            }
+        }
+        
+        const bookingsDoc = await db.collection('settings').doc('bookings').get();
+        if (bookingsDoc.exists && bookingsDoc.data().bookings) {
+            bookings = bookingsDoc.data().bookings;
+            renderPropertiesImmediately();
+            renderAdminDashboardImmediately();
+        }
+        
+        const heroDoc = await db.collection('settings').doc('heroImages').get();
+        if (heroDoc.exists && heroDoc.data().images) {
+            heroImages = heroDoc.data().images;
+            initHeroSlideshowImmediately();
+        }
+        
+        const phonesDoc = await db.collection('settings').doc('phones').get();
+        if (phonesDoc.exists) {
+            if (phonesDoc.data().phoneNumbers) phoneNumbers = phonesDoc.data().phoneNumbers;
+            if (phonesDoc.data().whatsappMainNumber) whatsappMainNumber = phonesDoc.data().whatsappMainNumber;
+            renderPhonesListImmediately();
+            document.getElementById('whatsappLink').href = `https://wa.me/${whatsappMainNumber}`;
+        }
+        
+        console.log("✅ Background sync completed");
+    } catch(e) { console.error("Background sync error:", e); }
+}
+
+async function saveToFirebase() {
+    if (!db) return;
+    try {
+        for (const property of properties) {
+            await db.collection('properties').doc(property.id.toString()).set(property);
+        }
+        await db.collection('settings').doc('bookings').set({ bookings: bookings });
+        await db.collection('settings').doc('heroImages').set({ images: heroImages });
+        await db.collection('settings').doc('phones').set({ phoneNumbers, whatsappMainNumber });
+        console.log("✅ Saved to Firebase");
+    } catch(e) { console.error("Save error:", e); }
+}
+
+// ======================== دوال الإدارة ========================
 async function saveVillaChanges() {
     document.querySelectorAll('.price-input').forEach(inp => {
         const id = parseInt(inp.dataset.id);
         const villa = properties.find(p => p.id === id);
-        if (villa) { 
-            villa.price = parseInt(inp.value) || 0; 
-            villa.priceDisplay = villa.price.toLocaleString('en-US');
-        }
+        if (villa) { villa.price = parseInt(inp.value) || 0; villa.priceDisplay = villa.price.toLocaleString('en-US'); }
     });
     document.querySelectorAll('.location-input').forEach(inp => {
         const id = parseInt(inp.dataset.id);
@@ -774,10 +794,9 @@ async function saveVillaChanges() {
         const villa = properties.find(p => p.id === id);
         if (villa) villa.visible = inp.checked;
     });
-    
-    await saveAllToFirebase();
-    renderProperties();
-    renderAdminDashboard();
+    renderPropertiesImmediately();
+    renderAdminDashboardImmediately();
+    await saveToFirebase();
     showToast('✅ تم حفظ جميع التغييرات');
 }
 
@@ -806,12 +825,10 @@ async function addNewVilla() {
     };
     
     properties.push(newVilla);
-    await saveAllToFirebase();
-    renderProperties();
-    renderAdminDashboard();
-    renderVillaSpeedControls();
-    updateVillaImagesInfo();
+    renderPropertiesImmediately();
+    renderAdminDashboardImmediately();
     clearAddVillaForm();
+    await saveToFirebase();
     showToast(`✅ تم إضافة ${number}`);
 }
 
@@ -819,56 +836,41 @@ async function deleteVilla(villaId) {
     if (confirm('هل أنت متأكد من حذف هذه الفيلا؟')) {
         if (imageIntervals[villaId]) clearInterval(imageIntervals[villaId]);
         properties = properties.filter(p => p.id !== villaId);
-        await saveAllToFirebase();
-        renderProperties();
-        renderAdminDashboard();
-        renderVillaSpeedControls();
-        updateVillaImagesInfo();
+        renderPropertiesImmediately();
+        renderAdminDashboardImmediately();
+        await saveToFirebase();
         showToast('✅ تم حذف الفيلا');
     }
 }
 
 async function adminBookVilla(villaId) {
-    if (bookings.some(b => b.villaId === villaId)) { 
-        showToast('❌ هذه الفيلا محجوزة بالفعل'); 
-        return; 
-    }
+    if (bookings.some(b => b.villaId === villaId)) { showToast('❌ هذه الفيلا محجوزة بالفعل'); return; }
     const villa = properties.find(p => p.id === villaId);
-    bookings.push({ 
-        id: Date.now(), 
-        villaId, 
-        villaNumber: villa.number, 
-        date: new Date().toLocaleDateString('ar-IQ'), 
-        time: new Date().toLocaleTimeString('ar-IQ') 
-    });
-    await saveAllToFirebase();
-    renderProperties();
-    renderAdminDashboard();
-    renderBookingsList();
+    bookings.push({ id: Date.now(), villaId, villaNumber: villa.number, date: new Date().toLocaleDateString('ar-IQ'), time: new Date().toLocaleTimeString('ar-IQ') });
+    renderPropertiesImmediately();
+    renderAdminDashboardImmediately();
+    await saveToFirebase();
     showToast(`✅ تم حجز ${villa.number}`);
 }
 
 async function adminCancelBooking(bookingId) {
     bookings = bookings.filter(b => b.id !== bookingId);
-    await saveAllToFirebase();
-    renderProperties();
-    renderAdminDashboard();
-    renderBookingsList();
+    renderPropertiesImmediately();
+    renderAdminDashboardImmediately();
+    await saveToFirebase();
     showToast('✅ تم إلغاء الحجز');
 }
 
 async function resetAllBookings() {
     if (confirm('هل أنت متأكد من حذف جميع الحجوزات؟')) {
         bookings = [];
-        await saveAllToFirebase();
-        renderProperties();
-        renderAdminDashboard();
-        renderBookingsList();
+        renderPropertiesImmediately();
+        renderAdminDashboardImmediately();
+        await saveToFirebase();
         showToast("✅ تم حذف جميع الحجوزات");
     }
 }
 
-// ======================== دوال أخرى ========================
 function openLocationLink(villaId) {
     const villa = properties.find(p => p.id === villaId);
     if (villa && villa.location) window.open(villa.location, '_blank');
@@ -892,47 +894,9 @@ function openGallery(villaId) {
 }
 
 let currentGalleryVilla = null;
-function setGalleryImage(index) { 
-    document.getElementById('galleryMain').src = currentGalleryVilla.images[index]; 
-    document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === index)); 
-}
-function closeGallery() { 
-    document.getElementById('galleryModal').classList.remove('active'); 
-    document.body.style.overflow = ''; 
-    currentGalleryVilla = null; 
-}
-function closeGalleryOnBackground(e) { 
-    if (e.target === document.getElementById('galleryModal')) closeGallery(); 
-}
-
-// ======================== بقية الدوال ========================
-function renderAdminDashboard() {
-    const visible = properties.filter(p => p.visible);
-    document.getElementById('totalVillas').textContent = properties.length;
-    document.getElementById('totalBookings').textContent = bookings.length;
-    document.getElementById('availableCount').textContent = visible.length - bookings.length;
-    document.getElementById('bookedCount').textContent = bookings.length;
-    
-    const tbody = document.getElementById('villaTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = properties.map(villa => {
-        const booked = bookings.some(b => b.villaId === villa.id);
-        const booking = bookings.find(b => b.villaId === villa.id);
-        return `<tr>
-            <td style="color:var(--gold);">${villa.number}</td>
-            <td><input type="text" class="location-input" data-id="${villa.id}" value="${villa.location || ''}" style="width:200px;"></td>
-            <td><input type="text" class="location-name-input" data-id="${villa.id}" value="${villa.locationName || ''}" style="width:120px;"></td>
-            <td><input type="number" class="price-input" data-id="${villa.id}" value="${villa.price}" step="1000" style="width:100px;"></td>
-            <td><input type="number" class="bedrooms-input" data-id="${villa.id}" value="${villa.bedrooms}" style="width:60px;"></td>
-            <td><input type="number" class="bathrooms-input" data-id="${villa.id}" value="${villa.bathrooms}" style="width:60px;"></td>
-            <td><input type="number" class="guests-input" data-id="${villa.id}" value="${villa.guests}" style="width:60px;"></td>
-            <td style="color:${booked ? 'var(--red)' : 'var(--green)'};">${booked ? 'محجوزة' : 'متاحة'}</td>
-            <td>${booked ? `<button class="btn-danger" onclick="adminCancelBooking(${booking.id})">إلغاء</button>` : `<button class="btn-gold" onclick="adminBookVilla(${villa.id})">حجز</button>`}</td>
-            <td><label class="toggle-switch"><input type="checkbox" class="visible-toggle" data-id="${villa.id}" ${villa.visible ? 'checked' : ''}><span class="toggle-slider"></span></label></td>
-            <td><button class="delete-villa-btn" onclick="deleteVilla(${villa.id})"><i class="fas fa-trash"></i> حذف</button></td>
-        </tr>`;
-    }).join('');
-}
+function setGalleryImage(index) { document.getElementById('galleryMain').src = currentGalleryVilla.images[index]; document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === index)); }
+function closeGallery() { document.getElementById('galleryModal').classList.remove('active'); document.body.style.overflow = ''; currentGalleryVilla = null; }
+function closeGalleryOnBackground(e) { if (e.target === document.getElementById('galleryModal')) closeGallery(); }
 
 function renderBookingsList() {
     const container = document.getElementById('bookingsListAdmin');
@@ -941,66 +905,43 @@ function renderBookingsList() {
     container.innerHTML = bookings.map(b => `<div class="booking-item"><div><strong style="color:var(--gold);">${b.villaNumber}</strong><span style="color:gray; margin-right:10px;">${b.date} - ${b.time}</span></div><button class="btn-danger" onclick="adminCancelBooking(${b.id})">إلغاء</button></div>`).join('');
 }
 
-function renderPhonesList() {
-    const container = document.getElementById('phonesList');
-    if (!container) return;
-    container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
-}
-
 function renderPhonesListAdmin() {
     const container = document.getElementById('phonesListContainer');
     if (!container) return;
-    container.innerHTML = phoneNumbers.map((phone, index) => `
-        <div class="phone-item"><input type="text" value="${phone}" onchange="updatePhoneNumber(${index}, this.value)"><button class="delete-villa-btn" onclick="removePhoneNumber(${index})"><i class="fas fa-trash"></i> حذف</button></div>
-    `).join('');
+    container.innerHTML = phoneNumbers.map((phone, index) => `<div class="phone-item"><input type="text" value="${phone}" onchange="updatePhoneNumber(${index}, this.value)"><button class="delete-villa-btn" onclick="removePhoneNumber(${index})"><i class="fas fa-trash"></i> حذف</button></div>`).join('');
 }
 
 function updatePhoneNumber(index, newNumber) {
     phoneNumbers[index] = newNumber;
-    savePhonesToFirebase();
-    renderPhonesList();
+    renderPhonesListImmediately();
+    saveToFirebase();
     showToast('✅ تم تحديث رقم الهاتف');
 }
 
 function addPhoneNumber() {
     phoneNumbers.push("رقم جديد");
-    savePhonesToFirebase();
     renderPhonesListAdmin();
-    renderPhonesList();
+    renderPhonesListImmediately();
+    saveToFirebase();
     showToast('✅ تم إضافة رقم هاتف جديد');
 }
 
 function removePhoneNumber(index) {
     if (phoneNumbers.length <= 1) { showToast('❌ لا يمكن حذف آخر رقم هاتف'); return; }
     phoneNumbers.splice(index, 1);
-    savePhonesToFirebase();
     renderPhonesListAdmin();
-    renderPhonesList();
+    renderPhonesListImmediately();
+    saveToFirebase();
     showToast('✅ تم حذف رقم الهاتف');
-}
-
-async function savePhonesToFirebase() {
-    if (!db) return;
-    await db.collection('settings').doc('phones').set({ phoneNumbers, whatsappMainNumber });
-}
-
-async function loadPhonesFromFirebase() {
-    if (!db) return;
-    const doc = await db.collection('settings').doc('phones').get();
-    if (doc.exists) {
-        if (doc.data().phoneNumbers) phoneNumbers = doc.data().phoneNumbers;
-        if (doc.data().whatsappMainNumber) whatsappMainNumber = doc.data().whatsappMainNumber;
-    }
 }
 
 function updateWhatsappNumber() {
     whatsappMainNumber = document.getElementById('whatsappMainNumber').value;
     document.getElementById('whatsappLink').href = `https://wa.me/${whatsappMainNumber}`;
-    savePhonesToFirebase();
+    saveToFirebase();
     showToast('✅ تم تحديث رقم واتساب');
 }
 
-// ======================== إعدادات المظهر ========================
 function updateSiteColors() {
     const primary = document.getElementById('primaryColor').value;
     const bg = document.getElementById('bgColor').value;
@@ -1028,41 +969,20 @@ function updateOverlay() {
 
 function updateSortOrder() {
     currentSortOrder = document.getElementById('sortOrder').value;
-    renderProperties();
+    renderPropertiesImmediately();
     showToast("🔄 تم تغيير ترتيب الفلل");
 }
 
-// ======================== الخلفيات والسلايدر ========================
 function updateHeroSlideshowSpeed() {
     heroSlideshowSpeed = parseInt(document.getElementById('heroSlideshowSpeed').value);
     document.getElementById('heroSpeedVal').innerText = heroSlideshowSpeed;
-    restartHeroSlideshow();
+    initHeroSlideshowImmediately();
 }
 
 function updateSlideshowMode() {
     slideshowMode = document.getElementById('slideshowMode').value;
-    restartHeroSlideshow();
+    initHeroSlideshowImmediately();
 }
-
-function restartHeroSlideshow() {
-    if (heroInterval) clearInterval(heroInterval);
-    if (heroImages.length === 0) return;
-    const container = document.getElementById('heroSlideshow');
-    if (!container) return;
-    container.innerHTML = heroImages.map((img, i) => `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`).join('');
-    if (heroImages.length > 1) {
-        heroInterval = setInterval(() => {
-            const images = container.querySelectorAll('img');
-            if (images.length === 0) return;
-            images[heroImageIndex].classList.remove('active');
-            if (slideshowMode === 'sequential') heroImageIndex = (heroImageIndex + 1) % images.length;
-            else { let newIndex; do { newIndex = Math.floor(Math.random() * images.length); } while (images.length > 1 && newIndex === heroImageIndex); heroImageIndex = newIndex; }
-            images[heroImageIndex].classList.add('active');
-        }, heroSlideshowSpeed * 1000);
-    }
-}
-
-function initHeroSlideshow() { restartHeroSlideshow(); }
 
 function handleHeroImageUpload(event) {
     const files = Array.from(event.target.files);
@@ -1071,10 +991,10 @@ function handleHeroImageUpload(event) {
             const reader = new FileReader();
             reader.onload = async function(e) {
                 heroImages.push(e.target.result);
-                await saveHeroImagesToFirebase();
-                restartHeroSlideshow();
+                initHeroSlideshowImmediately();
                 renderHeroImagesList();
-                showToast(`✅ تم إضافة صورة جديدة - المجموع: ${heroImages.length}`);
+                await saveToFirebase();
+                showToast(`✅ تم إضافة صورة جديدة`);
             };
             reader.readAsDataURL(file);
         }
@@ -1085,19 +1005,19 @@ async function addHeroImageByUrl() {
     const newImage = document.getElementById('newHeroImageUrl').value.trim();
     if (!newImage) { showToast('❌ الرجاء إدخال رابط صورة'); return; }
     heroImages.push(newImage);
-    await saveHeroImagesToFirebase();
-    restartHeroSlideshow();
+    initHeroSlideshowImmediately();
     renderHeroImagesList();
     document.getElementById('newHeroImageUrl').value = '';
+    await saveToFirebase();
     showToast(`✅ تم إضافة صورة خلفية جديدة`);
 }
 
 async function removeHeroImage(index) {
     if (heroImages.length <= 1) { showToast('❌ لا يمكن حذف آخر صورة'); return; }
     heroImages.splice(index, 1);
-    await saveHeroImagesToFirebase();
-    restartHeroSlideshow();
+    initHeroSlideshowImmediately();
     renderHeroImagesList();
+    await saveToFirebase();
     showToast(`✅ تم حذف الصورة`);
 }
 
@@ -1105,26 +1025,13 @@ function renderHeroImagesList() {
     const container = document.getElementById('heroImagesList');
     if (!container) return;
     if (heroImages.length === 0) { container.innerHTML = '<p style="text-align:center;">لا توجد صور خلفية</p>'; return; }
-    container.innerHTML = heroImages.map((img, i) => `
-        <div class="hero-image-item">
-            <img src="${img}" class="hero-image-preview" onerror="this.src='https://placehold.co/60x45?text=Error'">
-            <span style="flex:1; font-size:12px; overflow:hidden;">${img.length > 60 ? img.substring(0, 60) + '...' : img}</span>
-            <button class="delete-villa-btn" onclick="removeHeroImage(${i})"><i class="fas fa-trash"></i> حذف</button>
-        </div>
-    `).join('');
+    container.innerHTML = heroImages.map((img, i) => `<div class="hero-image-item"><img src="${img}" class="hero-image-preview" onerror="this.src='https://placehold.co/60x45?text=Error'"><span style="flex:1; font-size:12px; overflow:hidden;">${img.length > 60 ? img.substring(0, 60) + '...' : img}</span><button class="delete-villa-btn" onclick="removeHeroImage(${i})"><i class="fas fa-trash"></i> حذف</button></div>`).join('');
 }
 
-// ======================== سرعة تبديل صور الفلل ========================
 function renderVillaSpeedControls() {
     const container = document.getElementById('villaSpeedControls');
     if (!container) return;
-    container.innerHTML = properties.map(villa => `
-        <div class="speed-control-group">
-            <label style="min-width: 80px; color: var(--gold);">${villa.number}</label>
-            <input type="range" id="speed_${villa.id}" min="2" max="10" step="0.5" value="${villa.slideshowSpeed}" style="flex:1;" oninput="document.getElementById('speedVal_${villa.id}').innerText=this.value">
-            <span id="speedVal_${villa.id}" style="min-width: 35px;">${villa.slideshowSpeed}</span><span>ثانية</span>
-        </div>
-    `).join('');
+    container.innerHTML = properties.map(villa => `<div class="speed-control-group"><label style="min-width: 80px; color: var(--gold);">${villa.number}</label><input type="range" id="speed_${villa.id}" min="2" max="10" step="0.5" value="${villa.slideshowSpeed}" style="flex:1;" oninput="document.getElementById('speedVal_${villa.id}').innerText=this.value"><span id="speedVal_${villa.id}" style="min-width: 35px;">${villa.slideshowSpeed}</span><span>ثانية</span></div>`).join('');
 }
 
 function changeGlobalSpeedMode() {
@@ -1140,24 +1047,16 @@ function applyUniformSpeed() {
     properties.forEach(villa => { villa.slideshowSpeed = uniformSpeed; });
     renderVillaSpeedControls();
     restartAllVillaIntervals();
-    showToast(`✅ تم تطبيق سرعة موحدة (${uniformSpeed} ثانية)`);
+    showToast(`✅ تم تطبيق سرعة موحدة`);
 }
 
 async function applyAllSpeedSettings() {
     if (globalSpeedMode === 'uniform') applyUniformSpeed();
-    else if (globalSpeedMode === 'alternating') {
-        properties.forEach((villa, index) => { villa.slideshowSpeed = index % 2 === 0 ? 4 : 5.5; });
-        renderVillaSpeedControls();
-        showToast(`✅ تم تطبيق سرعة متناوبة`);
-    } else {
-        properties.forEach(villa => {
-            const speedInput = document.getElementById(`speed_${villa.id}`);
-            if (speedInput) villa.slideshowSpeed = parseFloat(speedInput.value);
-        });
-        showToast(`✅ تم تطبيق السرعات المحددة`);
-    }
+    else if (globalSpeedMode === 'alternating') { properties.forEach((villa, index) => { villa.slideshowSpeed = index % 2 === 0 ? 4 : 5.5; }); renderVillaSpeedControls(); showToast(`✅ تم تطبيق سرعة متناوبة`); }
+    else { properties.forEach(villa => { const speedInput = document.getElementById(`speed_${villa.id}`); if (speedInput) villa.slideshowSpeed = parseFloat(speedInput.value); }); showToast(`✅ تم تطبيق السرعات المحددة`); }
     restartAllVillaIntervals();
-    await saveAllToFirebase();
+    renderPropertiesImmediately();
+    await saveToFirebase();
 }
 
 function stopAllVillaIntervals() {
@@ -1190,10 +1089,7 @@ function randomizeAllVillaImages() {
         if (villa.images && villa.images.length > 0) {
             const randomIndex = Math.floor(Math.random() * villa.images.length);
             const img = document.getElementById(`img-${villa.id}`);
-            if (img) {
-                img.style.opacity = '0';
-                setTimeout(() => { img.src = villa.images[randomIndex]; img.style.opacity = '1'; }, 200);
-            }
+            if (img) { img.style.opacity = '0'; setTimeout(() => { img.src = villa.images[randomIndex]; img.style.opacity = '1'; }, 200); }
             currentImageIndex[villa.id] = randomIndex;
         }
     });
@@ -1208,33 +1104,14 @@ function updateVillaImagesInfo() {
 }
 
 async function saveVillaSpeedSettings() {
-    if (globalSpeedMode === 'individual') {
-        properties.forEach(villa => {
-            const speedInput = document.getElementById(`speed_${villa.id}`);
-            if (speedInput) villa.slideshowSpeed = parseFloat(speedInput.value);
-        });
-    } else if (globalSpeedMode === 'uniform') {
-        const uniformSpeed = parseFloat(document.getElementById('uniformSpeed').value);
-        properties.forEach(villa => { villa.slideshowSpeed = uniformSpeed; });
-    } else if (globalSpeedMode === 'alternating') {
-        properties.forEach((villa, index) => { villa.slideshowSpeed = index % 2 === 0 ? 4 : 5.5; });
-    }
+    if (globalSpeedMode === 'individual') { properties.forEach(villa => { const speedInput = document.getElementById(`speed_${villa.id}`); if (speedInput) villa.slideshowSpeed = parseFloat(speedInput.value); }); }
+    else if (globalSpeedMode === 'uniform') { const uniformSpeed = parseFloat(document.getElementById('uniformSpeed').value); properties.forEach(villa => { villa.slideshowSpeed = uniformSpeed; }); }
+    else if (globalSpeedMode === 'alternating') { properties.forEach((villa, index) => { villa.slideshowSpeed = index % 2 === 0 ? 4 : 5.5; }); }
     renderVillaSpeedControls();
     restartAllVillaIntervals();
-    await saveAllToFirebase();
+    renderPropertiesImmediately();
+    await saveToFirebase();
     showToast('✅ تم حفظ إعدادات سرعة الفلل');
-}
-
-// ======================== النصوص ========================
-function updateAllTexts() {
-    document.getElementById('siteTitle').textContent = siteTitle;
-    document.getElementById('siteDescription').textContent = siteDescription;
-    document.getElementById('sectionTitle').textContent = sectionTitleText;
-    document.getElementById('sectionSubtitle').textContent = sectionSubtitleText;
-    document.getElementById('footerText').textContent = footerMainText;
-    document.getElementById('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
-    document.getElementById('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
-    document.getElementById('footerLocationBtnText').innerText = footerLocationBtnText;
 }
 
 function updateButtonTextsAndSave() {
@@ -1249,21 +1126,15 @@ function updateButtonTextsAndSave() {
     footerSubLocationText = document.getElementById('footerSubLocationTextInput').value;
     footerLocationBtnText = document.getElementById('footerLocationBtnTextInput').value;
     footerLocationLink = document.getElementById('footerLocationLinkInput').value;
-    updateAllTexts();
-    saveAllToFirebase();
+    updateAllTextsImmediately();
+    renderPropertiesImmediately();
+    saveToFirebase();
 }
 
 function updateMainTextsAndSave() { updateButtonTextsAndSave(); }
 function updateFooterTextsAndSave() { updateButtonTextsAndSave(); }
-function updateFooterLocationLink() {
-    footerLocationLink = document.getElementById('footerLocationLinkInput').value;
-    saveAllToFirebase();
-}
-
-function openFooterLocation() {
-    if (footerLocationLink) window.open(footerLocationLink, '_blank');
-    else showToast('❌ لا يوجد رابط للموقع');
-}
+function updateFooterLocationLink() { footerLocationLink = document.getElementById('footerLocationLinkInput').value; saveToFirebase(); }
+function openFooterLocation() { if (footerLocationLink) window.open(footerLocationLink, '_blank'); else showToast('❌ لا يوجد رابط للموقع'); }
 
 async function resetAllTexts() {
     document.getElementById('whatsappBtnText').value = 'استفسار واتساب';
@@ -1283,12 +1154,12 @@ async function resetAllTexts() {
 
 async function resetImages() {
     heroImages = [...defaultHeroImages];
-    await saveHeroImagesToFirebase();
-    restartHeroSlideshow();
+    initHeroSlideshowImmediately();
     renderHeroImagesList();
     document.getElementById('overlayOpacity').value = '50';
     document.getElementById('overlayColor').value = '#000000';
     updateOverlay();
+    await saveToFirebase();
     showToast(`✅ تم استرجاع ${heroImages.length} صورة خلفية`);
 }
 
@@ -1302,7 +1173,7 @@ function resetAppearance() {
     currentSortOrder = 'default';
     updateSiteColors();
     updateLayout();
-    renderProperties();
+    renderPropertiesImmediately();
     showToast("✅ تم استرجاع إعدادات المظهر");
 }
 
@@ -1324,7 +1195,8 @@ function resetVillaSpeedSettings() {
     changeGlobalSpeedMode();
     renderVillaSpeedControls();
     restartAllVillaIntervals();
-    saveAllToFirebase();
+    renderPropertiesImmediately();
+    saveToFirebase();
     showToast("✅ تم استرجاع إعدادات السرعة");
 }
 
@@ -1333,38 +1205,37 @@ function resetPhonesSettings() {
     whatsappMainNumber = "9647503124874";
     document.getElementById('whatsappMainNumber').value = whatsappMainNumber;
     document.getElementById('whatsappLink').href = `https://wa.me/${whatsappMainNumber}`;
-    savePhonesToFirebase();
     renderPhonesListAdmin();
-    renderPhonesList();
+    renderPhonesListImmediately();
+    saveToFirebase();
     showToast('✅ تم استرجاع أرقام الهاتف');
 }
 
 function saveAppearanceSettings() {
     updateSiteColors();
     updateLayout();
-    saveAllToFirebase();
+    saveToFirebase();
     showToast('✅ تم حفظ إعدادات المظهر');
 }
 
 function saveImagesSettings() {
     updateOverlay();
-    saveAllToFirebase();
+    saveToFirebase();
     showToast('✅ تم حفظ إعدادات الصور');
 }
 
 function saveGeneralSettings() {
     updateHeroSlideshowSpeed();
     updateSlideshowMode();
-    saveAllToFirebase();
+    saveToFirebase();
     showToast('✅ تم حفظ الإعدادات العامة');
 }
 
 function savePhonesSettings() {
-    savePhonesToFirebase();
+    saveToFirebase();
     showToast('✅ تم حفظ أرقام الهاتف');
 }
 
-// ======================== إدارة المعرض ========================
 function handleImageUpload(event) {
     const files = Array.from(event.target.files);
     const preview = document.getElementById('imagePreviewArea');
@@ -1397,9 +1268,6 @@ function clearAddVillaForm() {
     showToast("🧹 تم مسح جميع الحقول");
 }
 
-function getNextId() { return properties.length > 0 ? Math.max(...properties.map(p => p.id)) + 1 : 7; }
-
-// ======================== أدوات مساعدة ========================
 function switchTab(tabName) {
     document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active-tab'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1407,10 +1275,7 @@ function switchTab(tabName) {
     event.target.classList.add('active');
     if (tabName === 'images') renderHeroImagesList();
     if (tabName === 'bookings') renderBookingsList();
-    if (tabName === 'villaImages') {
-        renderVillaSpeedControls();
-        updateVillaImagesInfo();
-    }
+    if (tabName === 'villaImages') { renderVillaSpeedControls(); updateVillaImagesInfo(); }
     if (tabName === 'phones') renderPhonesListAdmin();
 }
 
@@ -1431,11 +1296,14 @@ function checkPassword() {
     if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('dashboardSection').style.display = 'block';
-        renderAdminDashboard();
+        renderAdminDashboardImmediately();
+        renderBookingsList();
+        renderVillaSpeedControls();
+        updateVillaImagesInfo();
+        renderHeroImagesList();
+        renderPhonesListAdmin();
         showToast('✅ تم تسجيل الدخول');
-    } else {
-        showToast('❌ كلمة المرور غير صحيحة');
-    }
+    } else { showToast('❌ كلمة المرور غير صحيحة'); }
 }
 
 let hasScrolled = false;
@@ -1455,21 +1323,24 @@ function scrollToSection(id) {
     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
 }
 
-// ======================== التهيئة ========================
-async function init() {
+// بدء التشغيل - عرض الموقع فوراً ثم تحميل البيانات في الخلفية
+function init() {
     setupScrollNav();
-    await loadPhonesFromFirebase();
-    await loadAllData();
+    renderPropertiesImmediately();
+    renderAdminDashboardImmediately();
+    renderPhonesListImmediately();
+    updateAllTextsImmediately();
+    initHeroSlideshowImmediately();
     updateLayout();
     updateOverlay();
-    updateAllTexts();
     document.getElementById('heroSlideshowSpeed').value = heroSlideshowSpeed;
     document.getElementById('heroSpeedVal').innerText = heroSlideshowSpeed;
     document.getElementById('slideshowMode').value = slideshowMode;
     document.getElementById('sortOrder').value = currentSortOrder;
     document.getElementById('whatsappMainNumber').value = whatsappMainNumber;
     document.getElementById('whatsappLink').href = `https://wa.me/${whatsappMainNumber}`;
-    console.log("✅ تم تهيئة الموقع بنجاح مع Firebase");
+    initFirebase();
+    console.log("✅ تم تهيئة الموقع بنجاح - يظهر فوراً");
 }
 
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeGallery(); closeAdmin(); } });
