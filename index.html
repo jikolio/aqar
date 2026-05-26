@@ -6,171 +6,436 @@
     <title>فلل الفخامة - عقارات فاخرة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --gold: #D4AF37; --gold-light: #F4E4A6; --dark: #0a0a0a;
-            --white: #ffffff; --gray: #86868b; --green: #22c55e;
-            --red: #ef4444; --whatsapp: #25D366; --facebook: #1877f2; --instagram: #e4405f;
+        body { font-family: 'Tajawal', sans-serif; background: #0a0a0a; color: white; overflow-x: hidden; }
+        
+        /* Hero Slideshow */
+        .hero-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
         }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Tajawal', sans-serif; background: var(--dark);
-            color: var(--white); overflow-x: hidden; line-height: 1.6;
+        .hero-slideshow img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
         }
-        .hero-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
-        .hero-slideshow img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease-in-out; }
-        .hero-slideshow img.active { opacity: 1; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.7) 100%); z-index: -1; transition: all 0.3s; }
-        
-        nav { 
-            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 40px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            z-index: 1000; background: #000000; border-bottom: 2px solid var(--gold);
-            transition: transform 0.3s ease-in-out;
+        .hero-slideshow img.active {
+            opacity: 1;
         }
-        nav.hide { transform: translateY(-100%); }
-        .logo { font-size: 24px; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .nav-links { display: flex; gap: 30px; list-style: none; }
-        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s; cursor: pointer; }
-        .nav-links a:hover { color: var(--gold); }
         
-        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 20px 60px; }
-        .hero h1 { font-size: 64px; font-weight: 900; margin-bottom: 15px; background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold)); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 4s linear infinite; }
-        @keyframes shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-        .hero p { font-size: 20px; color: rgba(255,255,255,0.8); margin-bottom: 30px; max-width: 550px; }
-        .scroll-down { position: absolute; bottom: 30px; animation: bounce 2s infinite; cursor: pointer; color: var(--gold); font-size: 28px; }
-        @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-8px); } }
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
+        }
         
-        .properties { padding: 80px 40px; background: linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%); }
-        .section-title { text-align: center; margin-bottom: 50px; }
-        .section-title h2 { font-size: 42px; font-weight: 900; color: #1d1d1f; display: inline-block; }
-        .section-title h2::after { content: ''; display: block; width: 60px; height: 3px; background: var(--gold); margin: 10px auto 0; }
-        .section-title p { font-size: 16px; color: var(--gray); margin-top: 20px; }
-        .properties-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
-        .property-card { background: #ffffff; border-radius: 20px; overflow: hidden; transition: all 0.4s; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-        .property-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.12); }
-        .property-image-container { position: relative; height: 240px; overflow: hidden; cursor: pointer; }
-        .property-image { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
-        .property-number { position: absolute; top: 15px; right: 15px; background: var(--gold); color: var(--dark); padding: 8px 20px; border-radius: 25px; font-weight: 900; }
-        .property-status { position: absolute; top: 15px; left: 15px; padding: 6px 16px; border-radius: 25px; font-weight: 800; font-size: 13px; }
-        .status-available { background: var(--green); color: white; }
-        .status-booked { background: var(--red); color: white; }
-        .property-info { padding: 22px; }
-        .property-price { font-size: 28px; font-weight: 900; color: var(--gold); margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px; }
-        .property-price span { font-size: 14px; font-weight: 400; color: var(--gray); }
-        .property-location-name { font-size: 16px; font-weight: 700; color: #1d1d1f; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-        .property-location-name i { color: var(--gold); }
-        .property-features { display: flex; gap: 18px; margin-bottom: 18px; flex-wrap: wrap; }
-        .feature { display: flex; align-items: center; gap: 6px; color: var(--gray); font-size: 13px; }
-        .feature i { color: var(--gold); }
-        .property-buttons { display: flex; gap: 10px; flex-direction: row; }
-        .btn { flex: 1; padding: 11px 16px; border: none; border-radius: 10px; font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s; }
-        .btn-whatsapp { background: linear-gradient(135deg, var(--whatsapp), #128C7E); color: white; }
-        .btn-outline { background: transparent; color: var(--gold); border: 2px solid var(--gold); }
-        .btn-outline:hover { background: var(--gold); color: var(--dark); }
+        /* Hero Content */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .hero h1 {
+            font-size: 64px;
+            color: #D4AF37;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .hero p {
+            font-size: 20px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            color: #D4AF37;
+            font-size: 28px;
+        }
+        @keyframes bounce {
+            0%,20%,50%,80%,100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-8px); }
+        }
         
-        .gallery-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; }
-        .gallery-modal.active { display: flex; }
-        .gallery-main { max-width: 85%; max-height: 65vh; border-radius: 20px; border: 3px solid var(--gold); }
-        .gallery-thumbs { display: flex; gap: 12px; margin-top: 20px; overflow-x: auto; padding: 12px; max-width: 90%; }
-        .gallery-thumb { width: 100px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 3px solid transparent; }
-        .gallery-thumb:hover, .gallery-thumb.active { border-color: var(--gold); transform: scale(1.1); }
-        .gallery-close { position: absolute; top: 25px; left: 25px; font-size: 35px; color: white; cursor: pointer; background: rgba(255,255,255,0.1); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .gallery-close:hover { color: var(--gold); transform: rotate(90deg); }
+        /* Properties Section */
+        .properties {
+            position: relative;
+            z-index: 1;
+            padding: 80px 40px;
+            background: #f5f5f7;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-title h2 {
+            font-size: 42px;
+            color: #1d1d1f;
+        }
+        .section-title h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: #D4AF37;
+            margin: 10px auto 0;
+        }
+        .section-title p {
+            font-size: 16px;
+            color: #666;
+            margin-top: 15px;
+        }
         
-        footer { background: rgba(0,0,0,0.95); padding: 60px 40px 30px; }
-        .footer-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px; }
-        .footer-section h3 { color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-        .footer-section p, .footer-section a { color: var(--gray); text-decoration: none; line-height: 2; }
-        .footer-section a:hover { color: var(--gold); }
-        .footer-location-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; padding: 10px 25px; background: linear-gradient(135deg, var(--gold), #B8941F); color: var(--dark) !important; border-radius: 50px; font-weight: 800; cursor: pointer; border: none; }
-        .footer-location-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(212,175,55,0.4); }
-        .social-links { display: flex; gap: 12px; margin-top: 15px; align-items: center; flex-wrap: wrap; }
-        .social-links a { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; transition: all 0.3s; text-decoration: none; }
-        .social-links a:nth-child(1) { background: var(--whatsapp); border: none; }
-        .social-links a:nth-child(2) { background: var(--instagram); border: none; }
-        .social-links a:nth-child(3) { background: var(--facebook); border: none; }
-        .social-links a:hover { transform: translateY(-4px) scale(1.1); opacity: 0.9; }
-        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); color: var(--gray); margin-top: 40px; }
-        .phones-list { margin-top: 10px; }
-        .phones-list p { margin: 5px 0; }
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .property-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .property-image-container {
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+        }
+        .property-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s;
+        }
+        .property-number {
+            background: #D4AF37;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 10px;
+            color: black;
+            font-weight: bold;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 2;
+        }
+        .property-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 2;
+        }
+        .status-available {
+            background: #22c55e;
+            color: white;
+        }
+        .status-booked {
+            background: #ef4444;
+            color: white;
+        }
         
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(150px); background: linear-gradient(135deg, var(--gold), #B8941F); color: var(--dark); padding: 16px 35px; border-radius: 12px; font-weight: 800; z-index: 5000; transition: transform 0.5s; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        .property-info {
+            padding: 20px;
+        }
+        .property-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #D4AF37;
+            margin-bottom: 5px;
+        }
+        .property-location-name {
+            font-size: 14px;
+            color: #666;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .property-features {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .property-features span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            text-align: center;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+        .btn-location {
+            background: transparent;
+            border: 2px solid #D4AF37;
+            color: #D4AF37;
+        }
+        .btn-location:hover {
+            background: #D4AF37;
+            color: black;
+        }
+        
+        /* Footer */
+        footer {
+            background: #0a0a0a;
+            padding: 50px 40px 30px;
+            border-top: 1px solid #222;
+            position: relative;
+            z-index: 1;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+        .footer-section h3 {
+            color: #D4AF37;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .footer-section p {
+            color: #888;
+            line-height: 1.8;
+        }
+        .footer-section .phones-list p {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+        .social-links a:nth-child(1) { background: #25D366; }
+        .social-links a:nth-child(2) { background: #e4405f; }
+        .social-links a:nth-child(3) { background: #1877f2; }
+        .social-links a:hover {
+            transform: translateY(-3px);
+            opacity: 0.9;
+        }
+        .footer-location-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: #D4AF37;
+            color: black;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .footer-location-btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid #222;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #D4AF37;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: none;
+            z-index: 9999;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .toast.show {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            color: #D4AF37;
+            font-size: 18px;
+            gap: 10px;
+        }
+        .loading-spinner i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .properties { padding: 50px 20px; }
-            .nav-links { display: none; }
-            .property-buttons { flex-direction: column-reverse; }
+            .section-title h2 { font-size: 32px; }
+            .properties-grid { gap: 20px; }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+            .footer-section .phones-list p { justify-content: center; }
+            .social-links { justify-content: center; }
         }
     </style>
 </head>
 <body>
+    <!-- Hero Slideshow Background -->
     <div class="hero-slideshow" id="heroSlideshow"></div>
     <div class="overlay" id="siteOverlay"></div>
-    <nav id="navbar">
-        <div class="logo" onclick="scrollToSection('home')"><i class="fas fa-crown"></i> فلل الفخامة</div>
-        <ul class="nav-links">
-            <li><a onclick="scrollToSection('home')">الرئيسية</a></li>
-            <li><a onclick="scrollToSection('properties')">الفلل</a></li>
-            <li><a onclick="scrollToSection('location')">الموقع</a></li>
-            <li><a onclick="scrollToSection('contact')">تواصل معنا</a></li>
-        </ul>
-    </nav>
+    
+    <!-- Hero Section -->
     <section class="hero" id="home">
         <h1 id="siteTitle">فلل الفخامة</h1>
         <p id="siteDescription">استمتع بتجربة إقامة فاخرة مع إطلالات خلابة على الجبال والطبيعة الساحرة في قلب كردستان</p>
-        <div class="scroll-down" onclick="scrollToSection('properties')"><i class="fas fa-chevron-down"></i></div>
+        <div class="scroll-down" onclick="document.getElementById('properties').scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-chevron-down"></i>
+        </div>
     </section>
+    
+    <!-- Properties Section -->
     <section class="properties" id="properties">
         <div class="section-title">
             <h2 id="sectionTitle">فللنا الفاخرة</h2>
             <p id="sectionSubtitle">اختر الفيلا المثالية لإقامتك مع أحدث وسائل الراحة والفخامة</p>
         </div>
-        <div class="properties-grid" id="propertiesGrid"></div>
+        <div class="properties-grid" id="propertiesGrid">
+            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+        </div>
     </section>
-    <footer id="contact">
+    
+    <!-- Footer -->
+    <footer>
         <div class="footer-content">
             <div class="footer-section">
                 <h3><i class="fas fa-crown"></i> فلل الفخامة</h3>
                 <p id="footerText">نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية.</p>
-            </div>
-            <div class="footer-section" id="location">
-                <h3><i class="fas fa-map-marker-alt"></i> موقعنا</h3>
-                <p id="footerLocationText"><i class="fas fa-map-pin"></i> إقليم كردستان العراق - دهوك</p>
-                <p id="footerSubLocationText"><i class="fas fa-mountain"></i> منطقة زاويتا السياحية</p>
-                <button class="footer-location-btn" onclick="openFooterLocation()"><i class="fas fa-location-arrow"></i> <span id="footerLocationBtnText">فتح الموقع</span></button>
-            </div>
-            <div class="footer-section">
-                <h3><i class="fas fa-phone-alt"></i> وسائل التواصل</h3>
-                <div id="phonesList" class="phones-list"></div>
                 <div class="social-links">
                     <a href="https://wa.me/9647503124874" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
                     <a href="https://www.instagram.com/" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
                     <a href="https://www.facebook.com/" id="facebookLink" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-map-marker-alt"></i> موقعنا</h3>
+                <p id="footerLocationText"><i class="fas fa-map-pin"></i> إقليم كردستان العراق - دهوك</p>
+                <p id="footerSubLocationText"><i class="fas fa-mountain"></i> منطقة زاويتا السياحية</p>
+                <button class="footer-location-btn" onclick="window.open(footerLocationLink, '_blank')"><i class="fas fa-location-arrow"></i> <span id="footerLocationBtnText">فتح الموقع</span></button>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-phone-alt"></i> وسائل التواصل</h3>
+                <div id="phonesList" class="phones-list"></div>
+            </div>
         </div>
-        <div class="footer-bottom"><p>جميع الحقوق محفوظة © 2026 فلل الفخامة</p></div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة © 2026 فلل الفخامة</p>
+        </div>
     </footer>
     
-    <div class="gallery-modal" id="galleryModal" onclick="closeGalleryOnBackground(event)">
-        <span class="gallery-close" onclick="closeGallery()"><i class="fas fa-times"></i></span>
-        <img class="gallery-main" id="galleryMain" src="">
-        <div class="gallery-thumbs" id="galleryThumbs"></div>
-    </div>
-    
-    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastText"></span></div>
+    <div class="toast" id="toast">✅ <span id="toastMsg"></span></div>
 
 <script>
-// ======================== البيانات الثابتة ========================
+// ==================== Firebase Config ====================
+const firebaseConfig = {
+    apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
+    authDomain: "sarsink-434ff.firebaseapp.com",
+    projectId: "sarsink-434ff",
+    storageBucket: "sarsink-434ff.firebasestorage.app",
+    messagingSenderId: "289267387027",
+    appId: "1:289267387027:web:d91a3cd86971e689385b66"
+};
+
+// ==================== Default Data ====================
+const defaultImages = [
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
+];
+
 const defaultHeroImages = [
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
@@ -178,123 +443,138 @@ const defaultHeroImages = [
     "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
 ];
 
-const defaultImages = [
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
+const defaultProperties = [
+    { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, priceDisplay: "150,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: defaultImages, slideshowSpeed: 4 },
+    { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, priceDisplay: "200,000", bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: defaultImages, slideshowSpeed: 4 },
+    { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, priceDisplay: "120,000", bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: defaultImages, slideshowSpeed: 4 },
+    { id: 4, number: "فيلا ٤", locationName: "زاويتا - دهوك", price: 250000, priceDisplay: "250,000", bedrooms: 6, bathrooms: 5, guests: 12, visible: true, location: "https://www.google.com/maps?q=37.1450,43.6300", images: defaultImages, slideshowSpeed: 4 },
+    { id: 5, number: "فيلا ٥", locationName: "زاويتا - دهوك", price: 180000, priceDisplay: "180,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1300,43.6050", images: defaultImages, slideshowSpeed: 4 },
+    { id: 6, number: "فيلا ٦", locationName: "زاويتا - دهوك", price: 300000, priceDisplay: "300,000", bedrooms: 7, bathrooms: 6, guests: 14, visible: true, location: "https://www.google.com/maps?q=37.1500,43.6400", images: defaultImages, slideshowSpeed: 4 }
 ];
 
-let properties = [
-    { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, priceDisplay: "150,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, priceDisplay: "200,000", bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, priceDisplay: "120,000", bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 4, number: "فيلا ٤", locationName: "زاويتا - دهوك", price: 250000, priceDisplay: "250,000", bedrooms: 6, bathrooms: 5, guests: 12, visible: true, location: "https://www.google.com/maps?q=37.1450,43.6300", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 5, number: "فيلا ٥", locationName: "زاويتا - دهوك", price: 180000, priceDisplay: "180,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1300,43.6050", images: [...defaultImages], slideshowSpeed: 4 },
-    { id: 6, number: "فيلا ٦", locationName: "زاويتا - دهوك", price: 300000, priceDisplay: "300,000", bedrooms: 7, bathrooms: 6, guests: 14, visible: true, location: "https://www.google.com/maps?q=37.1500,43.6400", images: [...defaultImages], slideshowSpeed: 4 }
-];
+const defaultPhones = ["0750 312 4874"];
+const defaultWhatsapp = "9647503124874";
 
+// ==================== Global Variables ====================
+let db = null;
+let properties = [];
 let bookings = [];
 let heroImages = [...defaultHeroImages];
+let phoneNumbers = [...defaultPhones];
+let whatsappNumber = defaultWhatsapp;
 let imageIntervals = {};
 let currentImageIndex = {};
 let heroImageIndex = 0;
 let heroInterval = null;
-let whatsappMainNumber = "9647503124874";
-let phoneNumbers = ["0750 312 4874"];
+let heroSlideshowSpeed = 6;
+
+// متغيرات النصوص
 let siteTitle = "فلل الفخامة";
-let siteDescription = "استمتع بتجربة إقامة فاخرة مع إطلالات خلابة";
+let siteDescription = "استمتع بتجربة إقامة فاخرة مع إطلالات خلابة على الجبال والطبيعة الساحرة في قلب كردستان";
 let sectionTitleText = "فللنا الفاخرة";
-let sectionSubtitleText = "اختر الفيلا المثالية لإقامتك";
-let footerMainText = "نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة";
+let sectionSubtitleText = "اختر الفيلا المثالية لإقامتك مع أحدث وسائل الراحة والفخامة";
+let footerMainText = "نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية.";
 let footerLocationText = "إقليم كردستان العراق - دهوك";
 let footerSubLocationText = "منطقة زاويتا السياحية";
 let footerLocationBtnText = "فتح الموقع";
 let footerLocationLink = "https://www.google.com/maps/search/?api=1&query=37.1333,43.6167";
-let whatsappBtnText = "استفسار واتساب";
-let locationBtnText = "الموقع";
 
-// Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
-    authDomain: "sarsink-434ff.firebaseapp.com",
-    projectId: "sarsink-434ff",
-    storageBucket: "sarsink-434ff.firebasestorage.app",
-    messagingSenderId: "289267387027",
-    appId: "1:289267387027:web:d91a3cd86971e689385b66",
-    measurementId: "G-K1EF1X3WwZ"
-};
-
-let db = null;
-
-// تهيئة Firebase
+// ==================== Initialize Firebase ====================
 if (typeof firebase !== 'undefined') {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     console.log("✅ Firebase connected");
 }
 
-// تحميل البيانات من Firebase
-async function loadFromFirebase() {
-    if (!db) return;
-    try {
-        const propsSnapshot = await db.collection('properties').get();
-        if (!propsSnapshot.empty) {
-            const loadedProps = [];
-            propsSnapshot.forEach(doc => loadedProps.push(doc.data()));
-            if (loadedProps.length > 0) properties = loadedProps;
-        }
-        
-        const bookingsDoc = await db.collection('settings').doc('bookings').get();
-        if (bookingsDoc.exists && bookingsDoc.data().bookings) bookings = bookingsDoc.data().bookings;
-        
-        const heroDoc = await db.collection('settings').doc('heroImages').get();
-        if (heroDoc.exists && heroDoc.data().images) heroImages = heroDoc.data().images;
-        
-        const phonesDoc = await db.collection('settings').doc('phones').get();
-        if (phonesDoc.exists) {
-            if (phonesDoc.data().phoneNumbers) phoneNumbers = phonesDoc.data().phoneNumbers;
-            if (phonesDoc.data().whatsappMainNumber) whatsappMainNumber = phonesDoc.data().whatsappMainNumber;
-        }
-        
-        renderAll();
-    } catch(e) { console.error("Load error:", e); }
+// ==================== Hero Slideshow ====================
+function initHeroSlideshow() {
+    const container = document.getElementById('heroSlideshow');
+    if (!container) return;
+    
+    if (heroImages.length === 0) {
+        heroImages = [...defaultHeroImages];
+    }
+    
+    container.innerHTML = heroImages.map((img, i) => 
+        `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`
+    ).join('');
+    
+    if (heroInterval) clearInterval(heroInterval);
+    
+    if (heroImages.length > 1) {
+        heroInterval = setInterval(() => {
+            const images = container.querySelectorAll('img');
+            if (images.length === 0) return;
+            images[heroImageIndex].classList.remove('active');
+            heroImageIndex = (heroImageIndex + 1) % images.length;
+            images[heroImageIndex].classList.add('active');
+        }, heroSlideshowSpeed * 1000);
+    }
 }
 
+// ==================== Helper Functions ====================
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function updateTexts() {
+    document.getElementById('siteTitle').innerText = siteTitle;
+    document.getElementById('siteDescription').innerText = siteDescription;
+    document.getElementById('sectionTitle').innerText = sectionTitleText;
+    document.getElementById('sectionSubtitle').innerText = sectionSubtitleText;
+    document.getElementById('footerText').innerText = footerMainText;
+    document.getElementById('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
+    document.getElementById('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
+    document.getElementById('footerLocationBtnText').innerText = footerLocationBtnText;
+}
+
+function renderPhones() {
+    const container = document.getElementById('phonesList');
+    if (container) {
+        container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
+    }
+    document.getElementById('whatsappLink').href = `https://wa.me/${whatsappNumber}`;
+}
+
+// ==================== Render Properties ====================
 function renderProperties() {
     const grid = document.getElementById('propertiesGrid');
     if (!grid) return;
     
-    const visible = properties.filter(p => p.visible === true);
-    if (visible.length === 0) { grid.innerHTML = '<p style="text-align:center; color:gray;">لا توجد فلل متاحة</p>'; return; }
+    const visible = properties.filter(p => p.visible !== false);
+    if (visible.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:gray; padding:40px;">لا توجد فلل متاحة حالياً</p>';
+        return;
+    }
     
     grid.innerHTML = visible.map(villa => {
-        const booked = bookings.some(b => b.villaId === villa.id);
+        const isBooked = bookings.some(b => b.villaId === villa.id);
         return `
-        <div class="property-card">
-            <div class="property-image-container" onclick="openGallery(${villa.id})">
-                <img class="property-image" id="img-${villa.id}" src="${villa.images[0]}">
-                <span class="property-number">${villa.number}</span>
-                <span class="property-status ${booked ? 'status-booked' : 'status-available'}">${booked ? 'محجوزة' : 'متاحة'}</span>
-            </div>
-            <div class="property-info">
-                <div class="property-price">${villa.priceDisplay || villa.price.toLocaleString()}<span>د.ع / ليلة</span></div>
-                <div class="property-location-name"><i class="fas fa-map-marker-alt"></i> ${villa.locationName || 'موقع الفيلا'}</div>
-                <div class="property-features">
-                    <span class="feature"><i class="fas fa-bed"></i> ${villa.bedrooms} غرف</span>
-                    <span class="feature"><i class="fas fa-bath"></i> ${villa.bathrooms} حمام</span>
-                    <span class="feature"><i class="fas fa-users"></i> ${villa.guests} ضيف</span>
+            <div class="property-card">
+                <div class="property-image-container">
+                    <img class="property-image" id="img-${villa.id}" src="${villa.images && villa.images[0] ? villa.images[0] : defaultImages[0]}">
+                    <span class="property-number">${villa.number}</span>
+                    <span class="property-status ${isBooked ? 'status-booked' : 'status-available'}">${isBooked ? 'محجوزة' : 'متاحة'}</span>
                 </div>
-                <div class="property-buttons">
-                    <a href="javascript:void(0)" class="btn btn-whatsapp" onclick="openWhatsApp(${villa.id})"><i class="fab fa-whatsapp"></i> ${whatsappBtnText}</a>
-                    <button class="btn btn-outline" onclick="openLocationLink(${villa.id})"><i class="fas fa-map-marker-alt"></i> ${locationBtnText}</button>
+                <div class="property-info">
+                    <div class="property-price">${villa.price.toLocaleString()} <span style="font-size:14px;">د.ع / ليلة</span></div>
+                    <div class="property-location-name"><i class="fas fa-map-marker-alt"></i> ${villa.locationName || 'زاويتا - دهوك'}</div>
+                    <div class="property-features">
+                        <span><i class="fas fa-bed"></i> ${villa.bedrooms} غرف</span>
+                        <span><i class="fas fa-bath"></i> ${villa.bathrooms} حمامات</span>
+                        <span><i class="fas fa-users"></i> ${villa.guests} ضيوف</span>
+                    </div>
+                    <a href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent('مرحباً، أريد استفسار عن ' + villa.number)}" class="btn btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> استفسار واتساب</a>
+                    <a href="${villa.location || 'https://www.google.com/maps'}" class="btn btn-location" target="_blank"><i class="fas fa-map-marker-alt"></i> الموقع</a>
                 </div>
             </div>
-        </div>`;
+        `;
     }).join('');
     
-    // تشغيل سلايدر الصور
+    // Start image slideshow for each villa
     visible.forEach(villa => {
         if (imageIntervals[villa.id]) clearInterval(imageIntervals[villa.id]);
         if (villa.images && villa.images.length > 1) {
@@ -304,102 +584,164 @@ function renderProperties() {
                 if (img) {
                     currentImageIndex[villa.id] = (currentImageIndex[villa.id] + 1) % villa.images.length;
                     img.style.opacity = '0';
-                    setTimeout(() => { img.src = villa.images[currentImageIndex[villa.id]]; img.style.opacity = '1'; }, 200);
+                    setTimeout(() => {
+                        img.src = villa.images[currentImageIndex[villa.id]];
+                        img.style.opacity = '1';
+                    }, 200);
                 }
-            }, 4000);
+            }, (villa.slideshowSpeed || 4) * 1000);
         }
     });
 }
 
-function initHeroSlideshow() {
-    if (heroInterval) clearInterval(heroInterval);
-    if (heroImages.length === 0) return;
-    const container = document.getElementById('heroSlideshow');
-    if (!container) return;
-    container.innerHTML = heroImages.map((img, i) => `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`).join('');
-    if (heroImages.length > 1) {
-        heroInterval = setInterval(() => {
-            const images = container.querySelectorAll('img');
-            if (images.length === 0) return;
-            images[heroImageIndex].classList.remove('active');
-            heroImageIndex = (heroImageIndex + 1) % images.length;
-            images[heroImageIndex].classList.add('active');
-        }, 6000);
-    }
+// ==================== Load Hero Images from Firebase ====================
+async function loadHeroImagesFromFirebase() {
+    if (!db) return;
+    try {
+        const heroSnap = await db.collection('settings').doc('heroImages').get();
+        if (heroSnap.exists && heroSnap.data().images && heroSnap.data().images.length > 0) {
+            heroImages = heroSnap.data().images;
+            initHeroSlideshow();
+            console.log("✅ Hero images loaded from Firebase");
+        }
+    } catch(e) { console.error("Hero images load error:", e); }
 }
 
-function renderPhonesList() {
-    const container = document.getElementById('phonesList');
-    if (container) container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
+// ==================== Load Data from Firebase (Background) ====================
+async function loadFromFirebase() {
+    if (!db) return;
+    
+    try {
+        // Load properties
+        const propsSnap = await db.collection('properties').get();
+        if (!propsSnap.empty) {
+            properties = [];
+            propsSnap.forEach(doc => properties.push(doc.data()));
+            renderProperties();
+            console.log("✅ Properties loaded from Firebase");
+        }
+        
+        // Load bookings
+        const bookingsSnap = await db.collection('settings').doc('bookings').get();
+        if (bookingsSnap.exists && bookingsSnap.data().bookings) {
+            bookings = bookingsSnap.data().bookings;
+            renderProperties();
+            console.log("✅ Bookings loaded from Firebase");
+        }
+        
+        // Load phones
+        const phonesSnap = await db.collection('settings').doc('phones').get();
+        if (phonesSnap.exists) {
+            if (phonesSnap.data().phoneNumbers) phoneNumbers = phonesSnap.data().phoneNumbers;
+            if (phonesSnap.data().whatsappMainNumber) whatsappNumber = phonesSnap.data().whatsappMainNumber;
+            renderPhones();
+            console.log("✅ Phones loaded from Firebase");
+        }
+        
+        // Load texts
+        const textsSnap = await db.collection('settings').doc('texts').get();
+        if (textsSnap.exists) {
+            const t = textsSnap.data();
+            if (t.siteTitle) siteTitle = t.siteTitle;
+            if (t.siteDesc) siteDescription = t.siteDesc;
+            if (t.sectionTitle) sectionTitleText = t.sectionTitle;
+            if (t.sectionSubtitle) sectionSubtitleText = t.sectionSubtitle;
+            if (t.footerText) footerMainText = t.footerText;
+            if (t.footerLocationText) footerLocationText = t.footerLocationText;
+            if (t.footerSubLocationText) footerSubLocationText = t.footerSubLocationText;
+            if (t.footerLocationBtnText) footerLocationBtnText = t.footerLocationBtnText;
+            if (t.footerLocationLink) footerLocationLink = t.footerLocationLink;
+            updateTexts();
+            console.log("✅ Texts loaded from Firebase");
+        }
+        
+        // Load hero images
+        await loadHeroImagesFromFirebase();
+        
+    } catch(e) { console.error("Firebase load error:", e); }
 }
 
-function updateAllTexts() {
-    const el = (id) => document.getElementById(id);
-    if (el('siteTitle')) el('siteTitle').textContent = siteTitle;
-    if (el('siteDescription')) el('siteDescription').textContent = siteDescription;
-    if (el('sectionTitle')) el('sectionTitle').textContent = sectionTitleText;
-    if (el('sectionSubtitle')) el('sectionSubtitle').textContent = sectionSubtitleText;
-    if (el('footerText')) el('footerText').textContent = footerMainText;
-    if (el('footerLocationText')) el('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
-    if (el('footerSubLocationText')) el('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
-    if (el('footerLocationBtnText')) el('footerLocationBtnText').innerText = footerLocationBtnText;
-    if (el('whatsappLink')) el('whatsappLink').href = `https://wa.me/${whatsappMainNumber}`;
+// ==================== Listen to Real-time Changes ====================
+function listenToChanges() {
+    if (!db) return;
+    
+    // Listen to properties changes
+    db.collection('properties').onSnapshot((snapshot) => {
+        if (!snapshot.empty) {
+            properties = [];
+            snapshot.forEach(doc => properties.push(doc.data()));
+            renderProperties();
+            showToast("📢 تم تحديث الفلل");
+        }
+    });
+    
+    // Listen to bookings changes
+    db.collection('settings').doc('bookings').onSnapshot((doc) => {
+        if (doc.exists && doc.data().bookings) {
+            bookings = doc.data().bookings;
+            renderProperties();
+        }
+    });
+    
+    // Listen to phones changes
+    db.collection('settings').doc('phones').onSnapshot((doc) => {
+        if (doc.exists) {
+            if (doc.data().phoneNumbers) phoneNumbers = doc.data().phoneNumbers;
+            if (doc.data().whatsappMainNumber) whatsappNumber = doc.data().whatsappMainNumber;
+            renderPhones();
+        }
+    });
+    
+    // Listen to texts changes
+    db.collection('settings').doc('texts').onSnapshot((doc) => {
+        if (doc.exists) {
+            const t = doc.data();
+            if (t.siteTitle) siteTitle = t.siteTitle;
+            if (t.siteDesc) siteDescription = t.siteDesc;
+            if (t.sectionTitle) sectionTitleText = t.sectionTitle;
+            if (t.sectionSubtitle) sectionSubtitleText = t.sectionSubtitle;
+            if (t.footerText) footerMainText = t.footerText;
+            if (t.footerLocationText) footerLocationText = t.footerLocationText;
+            if (t.footerSubLocationText) footerSubLocationText = t.footerSubLocationText;
+            if (t.footerLocationBtnText) footerLocationBtnText = t.footerLocationBtnText;
+            if (t.footerLocationLink) footerLocationLink = t.footerLocationLink;
+            updateTexts();
+        }
+    });
+    
+    // Listen to hero images changes
+    db.collection('settings').doc('heroImages').onSnapshot((doc) => {
+        if (doc.exists && doc.data().images && doc.data().images.length > 0) {
+            heroImages = doc.data().images;
+            initHeroSlideshow();
+            showToast("📢 تم تحديث صور الخلفية");
+        }
+    });
 }
 
-function openLocationLink(villaId) {
-    const villa = properties.find(p => p.id === villaId);
-    if (villa && villa.location) window.open(villa.location, '_blank');
-    else showToast('❌ لا يوجد رابط موقع');
-}
-
-function openWhatsApp(villaId) {
-    const villa = properties.find(p => p.id === villaId);
-    const message = encodeURIComponent(`مرحباً، أنا مهتم بحجز ${villa.number}\nالسعر: ${villa.priceDisplay || villa.price} د.ع`);
-    window.open(`https://wa.me/${whatsappMainNumber}?text=${message}`, '_blank');
-}
-
-function openGallery(villaId) {
-    const villa = properties.find(p => p.id === villaId);
-    if (!villa) return;
-    currentGalleryVilla = villa;
-    document.getElementById('galleryMain').src = villa.images[0];
-    document.getElementById('galleryThumbs').innerHTML = villa.images.map((img, i) => `<img class="gallery-thumb ${i === 0 ? 'active' : ''}" src="${img}" onclick="setGalleryImage(${i})">`).join('');
-    document.getElementById('galleryModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-let currentGalleryVilla = null;
-function setGalleryImage(index) { document.getElementById('galleryMain').src = currentGalleryVilla.images[index]; document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === index)); }
-function closeGallery() { document.getElementById('galleryModal').classList.remove('active'); document.body.style.overflow = ''; currentGalleryVilla = null; }
-function closeGalleryOnBackground(e) { if (e.target === document.getElementById('galleryModal')) closeGallery(); }
-function openFooterLocation() { if (footerLocationLink) window.open(footerLocationLink, '_blank'); else showToast('❌ لا يوجد رابط للموقع'); }
-function showToast(msg) { const toast = document.getElementById('toast'); document.getElementById('toastText').textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
-
-let hasScrolled = false;
-function setupScrollNav() {
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => { if (window.scrollY > 50 && !hasScrolled) { hasScrolled = true; navbar.classList.add('hide'); } });
-}
-
-function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
-
-function renderAll() {
+// ==================== Initialize ====================
+function init() {
+    // Load default data immediately (so page shows instantly)
+    properties = JSON.parse(JSON.stringify(defaultProperties));
+    bookings = [];
+    phoneNumbers = [...defaultPhones];
+    whatsappNumber = defaultWhatsapp;
+    heroImages = [...defaultHeroImages];
+    
     renderProperties();
-    renderPhonesList();
-    updateAllTexts();
+    renderPhones();
+    updateTexts();
     initHeroSlideshow();
+    
+    // Then load from Firebase in background
+    loadFromFirebase();
+    listenToChanges();
+    
+    console.log("✅ Website initialized with hero slideshow");
 }
 
-async function init() {
-    setupScrollNav();
-    renderAll();
-    await loadFromFirebase();
-    renderAll();
-    console.log("✅ تم تهيئة الموقع بنجاح");
-}
-
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeGallery(); });
-window.addEventListener('DOMContentLoaded', init);
+// Start
+init();
 </script>
 </body>
 </html>
