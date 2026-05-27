@@ -12,392 +12,95 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Tajawal', sans-serif; background: #0a0a0a; color: white; overflow-x: hidden; }
         
-        /* Hero Slideshow */
-        .hero-slideshow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-        }
-        .hero-slideshow img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-        }
-        .hero-slideshow img.active {
-            opacity: 1;
-        }
+        .hero-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .hero-slideshow img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .hero-slideshow img.active { opacity: 1; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%); z-index: -1; }
         
-        /* Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%);
-            z-index: -1;
-        }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; z-index: 1; }
+        .hero h1 { font-size: 64px; color: #D4AF37; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero p { font-size: 20px; color: rgba(255,255,255,0.9); margin-bottom: 30px; max-width: 600px; }
+        .scroll-down { position: absolute; bottom: 30px; animation: bounce 2s infinite; cursor: pointer; color: #D4AF37; font-size: 28px; }
+        @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-8px); } }
         
-        /* Hero Content */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-        .hero h1 {
-            font-size: 64px;
-            color: #D4AF37;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .hero p {
-            font-size: 20px;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 30px;
-            max-width: 600px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-        .scroll-down {
-            position: absolute;
-            bottom: 30px;
-            animation: bounce 2s infinite;
-            cursor: pointer;
-            color: #D4AF37;
-            font-size: 28px;
-        }
-        @keyframes bounce {
-            0%,20%,50%,80%,100% { transform: translateY(0); }
-            40% { transform: translateY(-15px); }
-            60% { transform: translateY(-8px); }
-        }
+        .properties { position: relative; z-index: 1; padding: 80px 40px; background: #f5f5f7; }
+        .section-title { text-align: center; margin-bottom: 50px; }
+        .section-title h2 { font-size: 42px; color: #1d1d1f; }
+        .section-title h2::after { content: ''; display: block; width: 60px; height: 3px; background: #D4AF37; margin: 10px auto 0; }
+        .section-title p { font-size: 16px; color: #666; margin-top: 15px; }
         
-        /* Properties Section */
-        .properties {
-            position: relative;
-            z-index: 1;
-            padding: 80px 40px;
-            background: #f5f5f7;
-        }
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        .section-title h2 {
-            font-size: 42px;
-            color: #1d1d1f;
-        }
-        .section-title h2::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 3px;
-            background: #D4AF37;
-            margin: 10px auto 0;
-        }
-        .section-title p {
-            font-size: 16px;
-            color: #666;
-            margin-top: 15px;
-        }
+        .properties-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .property-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .property-card:hover { transform: translateY(-5px); }
+        .property-image-container { height: 220px; overflow: hidden; position: relative; }
+        .property-image { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s; }
+        .property-number { background: #D4AF37; display: inline-block; padding: 5px 15px; border-radius: 20px; margin: 10px; color: black; font-weight: bold; position: absolute; top: 0; right: 0; z-index: 2; }
+        .property-status { position: absolute; top: 10px; left: 10px; padding: 5px 15px; border-radius: 20px; font-weight: bold; z-index: 2; }
+        .status-available { background: #22c55e; color: white; }
+        .status-booked { background: #ef4444; color: white; }
         
-        .properties-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .property-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        .property-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-        .property-image-container {
-            height: 220px;
-            overflow: hidden;
-            position: relative;
-        }
-        .property-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: opacity 0.5s;
-        }
-        .property-number {
-            background: #D4AF37;
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin: 10px;
-            color: black;
-            font-weight: bold;
-            position: absolute;
-            top: 0;
-            right: 0;
-            z-index: 2;
-        }
-        .property-status {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            z-index: 2;
-        }
-        .status-available {
-            background: #22c55e;
-            color: white;
-        }
-        .status-booked {
-            background: #ef4444;
-            color: white;
-        }
+        .property-info { padding: 20px; }
+        .property-price { font-size: 24px; font-weight: bold; color: #D4AF37; }
+        .property-location-name { font-size: 14px; color: #666; margin: 10px 0; display: flex; align-items: center; gap: 5px; }
+        .property-features { display: flex; gap: 15px; margin: 15px 0; color: #666; font-size: 14px; }
+        .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; text-decoration: none; transition: 0.3s; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-whatsapp:hover { background: #128C7E; }
+        .btn-location { background: transparent; border: 2px solid #D4AF37; color: #D4AF37; }
+        .btn-location:hover { background: #D4AF37; color: black; }
         
-        .property-info {
-            padding: 20px;
-        }
-        .property-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #D4AF37;
-            margin-bottom: 5px;
-        }
-        .property-location-name {
-            font-size: 14px;
-            color: #666;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .property-features {
-            display: flex;
-            gap: 15px;
-            margin: 15px 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .property-features span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            text-align: center;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .btn-whatsapp {
-            background: #25D366;
-            color: white;
-        }
-        .btn-whatsapp:hover {
-            background: #128C7E;
-        }
-        .btn-location {
-            background: transparent;
-            border: 2px solid #D4AF37;
-            color: #D4AF37;
-        }
-        .btn-location:hover {
-            background: #D4AF37;
-            color: black;
-        }
-        
-        /* Footer */
-        footer {
-            background: #0a0a0a;
-            padding: 50px 40px 30px;
-            border-top: 1px solid #222;
-            position: relative;
-            z-index: 1;
-        }
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-        }
-        .footer-section h3 {
-            color: #D4AF37;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .footer-section p {
-            color: #888;
-            line-height: 1.8;
-        }
-        .footer-section .phones-list p {
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .social-links a {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-            transition: 0.3s;
-        }
+        footer { background: #0a0a0a; padding: 50px 40px 30px; border-top: 1px solid #222; position: relative; z-index: 1; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+        .footer-section h3 { color: #D4AF37; margin-bottom: 20px; font-size: 18px; }
+        .footer-section p { color: #888; line-height: 1.8; }
+        .social-links { display: flex; gap: 15px; margin-top: 15px; }
+        .social-links a { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; transition: 0.3s; }
         .social-links a:nth-child(1) { background: #25D366; }
         .social-links a:nth-child(2) { background: #e4405f; }
         .social-links a:nth-child(3) { background: #1877f2; }
-        .social-links a:hover {
-            transform: translateY(-3px);
-            opacity: 0.9;
-        }
-        .footer-location-btn {
-            margin-top: 15px;
-            padding: 8px 20px;
-            background: #D4AF37;
-            color: black;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .footer-location-btn:hover {
-            transform: scale(1.02);
-            opacity: 0.9;
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            margin-top: 30px;
-            border-top: 1px solid #222;
-            color: #666;
-            font-size: 14px;
-        }
+        .social-links a:hover { transform: translateY(-3px); opacity: 0.9; }
+        .footer-location-btn { margin-top: 15px; padding: 8px 20px; background: #D4AF37; color: black; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .footer-bottom { text-align: center; padding-top: 30px; margin-top: 30px; border-top: 1px solid #222; color: #666; font-size: 14px; }
         
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #D4AF37;
-            color: black;
-            padding: 10px 20px;
-            border-radius: 30px;
-            display: none;
-            z-index: 9999;
-            font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .toast.show {
-            display: block;
-            animation: fadeInUp 0.3s ease;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        
-        /* Loading Spinner */
-        .loading-spinner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 50px;
-            color: #D4AF37;
-            font-size: 18px;
-            gap: 10px;
-        }
-        .loading-spinner i {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #D4AF37; color: black; padding: 10px 20px; border-radius: 30px; display: none; z-index: 9999; font-weight: bold; }
+        .toast.show { display: block; }
         
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .properties { padding: 50px 20px; }
             .section-title h2 { font-size: 32px; }
-            .properties-grid { gap: 20px; }
-            .footer-content { grid-template-columns: 1fr; text-align: center; }
-            .footer-section .phones-list p { justify-content: center; }
-            .social-links { justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <!-- Hero Slideshow Background -->
     <div class="hero-slideshow" id="heroSlideshow"></div>
     <div class="overlay" id="siteOverlay"></div>
     
-    <!-- Hero Section -->
     <section class="hero" id="home">
         <h1 id="siteTitle">فلل الفخامة</h1>
-        <p id="siteDescription">استمتع بتجربة إقامة فاخرة مع إطلالات خلابة على الجبال والطبيعة الساحرة في قلب كردستان</p>
+        <p id="siteDescription">استمتع بتجربة إقامة فاخرة في قلب كردستان</p>
         <div class="scroll-down" onclick="document.getElementById('properties').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-chevron-down"></i>
         </div>
     </section>
     
-    <!-- Properties Section -->
     <section class="properties" id="properties">
         <div class="section-title">
             <h2 id="sectionTitle">فللنا الفاخرة</h2>
-            <p id="sectionSubtitle">اختر الفيلا المثالية لإقامتك مع أحدث وسائل الراحة والفخامة</p>
+            <p id="sectionSubtitle">اختر الفيلا المثالية لإقامتك</p>
         </div>
-        <div class="properties-grid" id="propertiesGrid">
-            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
-        </div>
+        <div class="properties-grid" id="propertiesGrid"></div>
     </section>
     
-    <!-- Footer -->
     <footer>
         <div class="footer-content">
             <div class="footer-section">
                 <h3><i class="fas fa-crown"></i> فلل الفخامة</h3>
-                <p id="footerText">نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية.</p>
+                <p id="footerText">نقدم لكم تجربة إقامة فاخرة</p>
                 <div class="social-links">
-                    <a href="https://wa.me/9647503124874" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://www.instagram.com/" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="https://www.facebook.com/" id="facebookLink" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" id="facebookLink" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
             <div class="footer-section">
@@ -408,7 +111,7 @@
             </div>
             <div class="footer-section">
                 <h3><i class="fas fa-phone-alt"></i> وسائل التواصل</h3>
-                <div id="phonesList" class="phones-list"></div>
+                <div id="phonesList"></div>
             </div>
         </div>
         <div class="footer-bottom">
@@ -419,7 +122,6 @@
     <div class="toast" id="toast">✅ <span id="toastMsg"></span></div>
 
 <script>
-// ==================== Firebase Config ====================
 const firebaseConfig = {
     apiKey: "AIzaSyBQjYcEHXbagGzEA5ein_Ih3VluhISxyOo",
     authDomain: "sarsink-434ff.firebaseapp.com",
@@ -429,78 +131,51 @@ const firebaseConfig = {
     appId: "1:289267387027:web:d91a3cd86971e689385b66"
 };
 
-// ==================== Default Data ====================
-const defaultImages = [
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
-];
-
-const defaultHeroImages = [
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
-    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80",
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
-];
-
-const defaultProperties = [
-    { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, priceDisplay: "150,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: defaultImages, slideshowSpeed: 4 },
-    { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, priceDisplay: "200,000", bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: defaultImages, slideshowSpeed: 4 },
-    { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, priceDisplay: "120,000", bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: defaultImages, slideshowSpeed: 4 },
-    { id: 4, number: "فيلا ٤", locationName: "زاويتا - دهوك", price: 250000, priceDisplay: "250,000", bedrooms: 6, bathrooms: 5, guests: 12, visible: true, location: "https://www.google.com/maps?q=37.1450,43.6300", images: defaultImages, slideshowSpeed: 4 },
-    { id: 5, number: "فيلا ٥", locationName: "زاويتا - دهوك", price: 180000, priceDisplay: "180,000", bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1300,43.6050", images: defaultImages, slideshowSpeed: 4 },
-    { id: 6, number: "فيلا ٦", locationName: "زاويتا - دهوك", price: 300000, priceDisplay: "300,000", bedrooms: 7, bathrooms: 6, guests: 14, visible: true, location: "https://www.google.com/maps?q=37.1500,43.6400", images: defaultImages, slideshowSpeed: 4 }
-];
-
-const defaultPhones = ["0750 312 4874"];
-const defaultWhatsapp = "9647503124874";
-
-// ==================== Global Variables ====================
 let db = null;
 let properties = [];
 let bookings = [];
-let heroImages = [...defaultHeroImages];
-let phoneNumbers = [...defaultPhones];
-let whatsappNumber = defaultWhatsapp;
+let heroImages = [];
+let phoneNumbers = ["0750 312 4874"];
+let whatsappNumber = "9647503124874";
+let instagramUrl = "https://www.instagram.com/";
+let facebookUrl = "https://www.facebook.com/";
+let footerLocationLink = "https://www.google.com/maps/search/?api=1&query=37.1333,43.6167";
 let imageIntervals = {};
 let currentImageIndex = {};
 let heroImageIndex = 0;
 let heroInterval = null;
 let heroSlideshowSpeed = 6;
 
-// متغيرات النصوص
-let siteTitle = "فلل الفخامة";
-let siteDescription = "استمتع بتجربة إقامة فاخرة مع إطلالات خلابة على الجبال والطبيعة الساحرة في قلب كردستان";
-let sectionTitleText = "فللنا الفاخرة";
-let sectionSubtitleText = "اختر الفيلا المثالية لإقامتك مع أحدث وسائل الراحة والفخامة";
-let footerMainText = "نقدم لكم تجربة إقامة فاخرة بأعلى معايير الجودة والرفاهية في أجمل المواقع الطبيعية.";
-let footerLocationText = "إقليم كردستان العراق - دهوك";
-let footerSubLocationText = "منطقة زاويتا السياحية";
-let footerLocationBtnText = "فتح الموقع";
-let footerLocationLink = "https://www.google.com/maps/search/?api=1&query=37.1333,43.6167";
+const defaultHeroImages = [
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80",
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
+];
 
-// ==================== Initialize Firebase ====================
+const defaultImages = [
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80"
+];
+
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     console.log("✅ Firebase connected");
 }
 
-// ==================== Hero Slideshow ====================
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
 function initHeroSlideshow() {
     const container = document.getElementById('heroSlideshow');
     if (!container) return;
-    
-    if (heroImages.length === 0) {
-        heroImages = [...defaultHeroImages];
-    }
-    
-    container.innerHTML = heroImages.map((img, i) => 
-        `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`
-    ).join('');
-    
+    if (heroImages.length === 0) heroImages = [...defaultHeroImages];
+    container.innerHTML = heroImages.map((img, i) => `<img src="${img}" class="${i === heroImageIndex ? 'active' : ''}">`).join('');
     if (heroInterval) clearInterval(heroInterval);
-    
     if (heroImages.length > 1) {
         heroInterval = setInterval(() => {
             const images = container.querySelectorAll('img');
@@ -512,43 +187,11 @@ function initHeroSlideshow() {
     }
 }
 
-// ==================== Helper Functions ====================
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toastMsg').innerText = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-function updateTexts() {
-    document.getElementById('siteTitle').innerText = siteTitle;
-    document.getElementById('siteDescription').innerText = siteDescription;
-    document.getElementById('sectionTitle').innerText = sectionTitleText;
-    document.getElementById('sectionSubtitle').innerText = sectionSubtitleText;
-    document.getElementById('footerText').innerText = footerMainText;
-    document.getElementById('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
-    document.getElementById('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
-    document.getElementById('footerLocationBtnText').innerText = footerLocationBtnText;
-}
-
-function renderPhones() {
-    const container = document.getElementById('phonesList');
-    if (container) {
-        container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
-    }
-    document.getElementById('whatsappLink').href = `https://wa.me/${whatsappNumber}`;
-}
-
-// ==================== Render Properties ====================
 function renderProperties() {
     const grid = document.getElementById('propertiesGrid');
     if (!grid) return;
-    
     const visible = properties.filter(p => p.visible !== false);
-    if (visible.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; color:gray; padding:40px;">لا توجد فلل متاحة حالياً</p>';
-        return;
-    }
+    if (visible.length === 0) { grid.innerHTML = '<p style="text-align:center;">لا توجد فلل متاحة</p>'; return; }
     
     grid.innerHTML = visible.map(villa => {
         const isBooked = bookings.some(b => b.villaId === villa.id);
@@ -560,7 +203,7 @@ function renderProperties() {
                     <span class="property-status ${isBooked ? 'status-booked' : 'status-available'}">${isBooked ? 'محجوزة' : 'متاحة'}</span>
                 </div>
                 <div class="property-info">
-                    <div class="property-price">${villa.price.toLocaleString()} <span style="font-size:14px;">د.ع / ليلة</span></div>
+                    <div class="property-price">${villa.price.toLocaleString()} د.ع/ليلة</div>
                     <div class="property-location-name"><i class="fas fa-map-marker-alt"></i> ${villa.locationName || 'زاويتا - دهوك'}</div>
                     <div class="property-features">
                         <span><i class="fas fa-bed"></i> ${villa.bedrooms} غرف</span>
@@ -574,7 +217,6 @@ function renderProperties() {
         `;
     }).join('');
     
-    // Start image slideshow for each villa
     visible.forEach(villa => {
         if (imageIntervals[villa.id]) clearInterval(imageIntervals[villa.id]);
         if (villa.images && villa.images.length > 1) {
@@ -584,98 +226,43 @@ function renderProperties() {
                 if (img) {
                     currentImageIndex[villa.id] = (currentImageIndex[villa.id] + 1) % villa.images.length;
                     img.style.opacity = '0';
-                    setTimeout(() => {
-                        img.src = villa.images[currentImageIndex[villa.id]];
-                        img.style.opacity = '1';
-                    }, 200);
+                    setTimeout(() => { img.src = villa.images[currentImageIndex[villa.id]]; img.style.opacity = '1'; }, 200);
                 }
             }, (villa.slideshowSpeed || 4) * 1000);
         }
     });
 }
 
-// ==================== Load Hero Images from Firebase ====================
-async function loadHeroImagesFromFirebase() {
-    if (!db) return;
-    try {
-        const heroSnap = await db.collection('settings').doc('heroImages').get();
-        if (heroSnap.exists && heroSnap.data().images && heroSnap.data().images.length > 0) {
-            heroImages = heroSnap.data().images;
-            initHeroSlideshow();
-            console.log("✅ Hero images loaded from Firebase");
-        }
-    } catch(e) { console.error("Hero images load error:", e); }
+function renderPhones() {
+    const container = document.getElementById('phonesList');
+    if (container) container.innerHTML = phoneNumbers.map(phone => `<p><i class="fas fa-phone-alt"></i> ${phone}</p>`).join('');
+    document.getElementById('whatsappLink').href = `https://wa.me/${whatsappNumber}`;
+    document.getElementById('instagramLink').href = instagramUrl;
+    document.getElementById('facebookLink').href = facebookUrl;
 }
 
-// ==================== Load Data from Firebase (Background) ====================
-async function loadFromFirebase() {
-    if (!db) return;
-    
-    try {
-        // Load properties
-        const propsSnap = await db.collection('properties').get();
-        if (!propsSnap.empty) {
-            properties = [];
-            propsSnap.forEach(doc => properties.push(doc.data()));
-            renderProperties();
-            console.log("✅ Properties loaded from Firebase");
-        }
-        
-        // Load bookings
-        const bookingsSnap = await db.collection('settings').doc('bookings').get();
-        if (bookingsSnap.exists && bookingsSnap.data().bookings) {
-            bookings = bookingsSnap.data().bookings;
-            renderProperties();
-            console.log("✅ Bookings loaded from Firebase");
-        }
-        
-        // Load phones
-        const phonesSnap = await db.collection('settings').doc('phones').get();
-        if (phonesSnap.exists) {
-            if (phonesSnap.data().phoneNumbers) phoneNumbers = phonesSnap.data().phoneNumbers;
-            if (phonesSnap.data().whatsappMainNumber) whatsappNumber = phonesSnap.data().whatsappMainNumber;
-            renderPhones();
-            console.log("✅ Phones loaded from Firebase");
-        }
-        
-        // Load texts
-        const textsSnap = await db.collection('settings').doc('texts').get();
-        if (textsSnap.exists) {
-            const t = textsSnap.data();
-            if (t.siteTitle) siteTitle = t.siteTitle;
-            if (t.siteDesc) siteDescription = t.siteDesc;
-            if (t.sectionTitle) sectionTitleText = t.sectionTitle;
-            if (t.sectionSubtitle) sectionSubtitleText = t.sectionSubtitle;
-            if (t.footerText) footerMainText = t.footerText;
-            if (t.footerLocationText) footerLocationText = t.footerLocationText;
-            if (t.footerSubLocationText) footerSubLocationText = t.footerSubLocationText;
-            if (t.footerLocationBtnText) footerLocationBtnText = t.footerLocationBtnText;
-            if (t.footerLocationLink) footerLocationLink = t.footerLocationLink;
-            updateTexts();
-            console.log("✅ Texts loaded from Firebase");
-        }
-        
-        // Load hero images
-        await loadHeroImagesFromFirebase();
-        
-    } catch(e) { console.error("Firebase load error:", e); }
+function updateTexts(siteTitle, siteDesc, sectionTitle, sectionSubtitle, footerText, footerLocationText, footerSubLocationText, footerLocationBtnText) {
+    if (siteTitle) document.getElementById('siteTitle').innerText = siteTitle;
+    if (siteDesc) document.getElementById('siteDescription').innerText = siteDesc;
+    if (sectionTitle) document.getElementById('sectionTitle').innerText = sectionTitle;
+    if (sectionSubtitle) document.getElementById('sectionSubtitle').innerText = sectionSubtitle;
+    if (footerText) document.getElementById('footerText').innerText = footerText;
+    if (footerLocationText) document.getElementById('footerLocationText').innerHTML = `<i class="fas fa-map-pin"></i> ${footerLocationText}`;
+    if (footerSubLocationText) document.getElementById('footerSubLocationText').innerHTML = `<i class="fas fa-mountain"></i> ${footerSubLocationText}`;
+    if (footerLocationBtnText) document.getElementById('footerLocationBtnText').innerText = footerLocationBtnText;
 }
 
-// ==================== Listen to Real-time Changes ====================
+// ==================== Real-time Listeners ====================
 function listenToChanges() {
     if (!db) return;
     
-    // Listen to properties changes
     db.collection('properties').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-            properties = [];
-            snapshot.forEach(doc => properties.push(doc.data()));
-            renderProperties();
-            showToast("📢 تم تحديث الفلل");
-        }
+        properties = [];
+        snapshot.forEach(doc => properties.push(doc.data()));
+        renderProperties();
+        showToast("📢 تم تحديث الفلل");
     });
     
-    // Listen to bookings changes
     db.collection('settings').doc('bookings').onSnapshot((doc) => {
         if (doc.exists && doc.data().bookings) {
             bookings = doc.data().bookings;
@@ -683,65 +270,86 @@ function listenToChanges() {
         }
     });
     
-    // Listen to phones changes
     db.collection('settings').doc('phones').onSnapshot((doc) => {
         if (doc.exists) {
             if (doc.data().phoneNumbers) phoneNumbers = doc.data().phoneNumbers;
             if (doc.data().whatsappMainNumber) whatsappNumber = doc.data().whatsappMainNumber;
+            if (doc.data().instagramUrl) instagramUrl = doc.data().instagramUrl;
+            if (doc.data().facebookUrl) facebookUrl = doc.data().facebookUrl;
             renderPhones();
         }
     });
     
-    // Listen to texts changes
     db.collection('settings').doc('texts').onSnapshot((doc) => {
         if (doc.exists) {
-            const t = doc.data();
-            if (t.siteTitle) siteTitle = t.siteTitle;
-            if (t.siteDesc) siteDescription = t.siteDesc;
-            if (t.sectionTitle) sectionTitleText = t.sectionTitle;
-            if (t.sectionSubtitle) sectionSubtitleText = t.sectionSubtitle;
-            if (t.footerText) footerMainText = t.footerText;
-            if (t.footerLocationText) footerLocationText = t.footerLocationText;
-            if (t.footerSubLocationText) footerSubLocationText = t.footerSubLocationText;
-            if (t.footerLocationBtnText) footerLocationBtnText = t.footerLocationBtnText;
-            if (t.footerLocationLink) footerLocationLink = t.footerLocationLink;
-            updateTexts();
+            updateTexts(
+                doc.data().siteTitle, doc.data().siteDesc,
+                doc.data().sectionTitle, doc.data().sectionSubtitle,
+                doc.data().footerText, doc.data().footerLocationText,
+                doc.data().footerSubLocationText, doc.data().footerLocationBtnText
+            );
         }
     });
     
-    // Listen to hero images changes
     db.collection('settings').doc('heroImages').onSnapshot((doc) => {
         if (doc.exists && doc.data().images && doc.data().images.length > 0) {
             heroImages = doc.data().images;
             initHeroSlideshow();
-            showToast("📢 تم تحديث صور الخلفية");
         }
     });
 }
 
-// ==================== Initialize ====================
-function init() {
-    // Load default data immediately (so page shows instantly)
-    properties = JSON.parse(JSON.stringify(defaultProperties));
-    bookings = [];
-    phoneNumbers = [...defaultPhones];
-    whatsappNumber = defaultWhatsapp;
-    heroImages = [...defaultHeroImages];
+async function loadInitialData() {
+    if (!db) {
+        properties = [
+            { id: 1, number: "فيلا ١", locationName: "زاويتا - دهوك", price: 150000, bedrooms: 4, bathrooms: 3, guests: 8, visible: true, location: "https://www.google.com/maps?q=37.1333,43.6167", images: defaultImages, slideshowSpeed: 4 },
+            { id: 2, number: "فيلا ٢", locationName: "زاويتا - دهوك", price: 200000, bedrooms: 5, bathrooms: 4, guests: 10, visible: true, location: "https://www.google.com/maps?q=37.1400,43.6200", images: defaultImages, slideshowSpeed: 4 },
+            { id: 3, number: "فيلا ٣", locationName: "زاويتا - دهوك", price: 120000, bedrooms: 3, bathrooms: 2, guests: 6, visible: true, location: "https://www.google.com/maps?q=37.1250,43.6100", images: defaultImages, slideshowSpeed: 4 }
+        ];
+        bookings = [];
+        heroImages = [...defaultHeroImages];
+        renderProperties();
+        renderPhones();
+        initHeroSlideshow();
+        return;
+    }
     
-    renderProperties();
-    renderPhones();
-    updateTexts();
-    initHeroSlideshow();
-    
-    // Then load from Firebase in background
-    loadFromFirebase();
-    listenToChanges();
-    
-    console.log("✅ Website initialized with hero slideshow");
+    try {
+        const propsSnap = await db.collection('properties').get();
+        if (!propsSnap.empty) { properties = []; propsSnap.forEach(doc => properties.push(doc.data())); }
+        
+        const bookingsSnap = await db.collection('settings').doc('bookings').get();
+        if (bookingsSnap.exists && bookingsSnap.data().bookings) bookings = bookingsSnap.data().bookings;
+        
+        const phonesSnap = await db.collection('settings').doc('phones').get();
+        if (phonesSnap.exists) {
+            if (phonesSnap.data().phoneNumbers) phoneNumbers = phonesSnap.data().phoneNumbers;
+            if (phonesSnap.data().whatsappMainNumber) whatsappNumber = phonesSnap.data().whatsappMainNumber;
+            if (phonesSnap.data().instagramUrl) instagramUrl = phonesSnap.data().instagramUrl;
+            if (phonesSnap.data().facebookUrl) facebookUrl = phonesSnap.data().facebookUrl;
+        }
+        
+        const textsSnap = await db.collection('settings').doc('texts').get();
+        if (textsSnap.exists) {
+            updateTexts(
+                textsSnap.data().siteTitle, textsSnap.data().siteDesc,
+                textsSnap.data().sectionTitle, textsSnap.data().sectionSubtitle,
+                textsSnap.data().footerText, textsSnap.data().footerLocationText,
+                textsSnap.data().footerSubLocationText, textsSnap.data().footerLocationBtnText
+            );
+        }
+        
+        const heroSnap = await db.collection('settings').doc('heroImages').get();
+        if (heroSnap.exists && heroSnap.data().images) heroImages = heroSnap.data().images;
+        
+        renderProperties();
+        renderPhones();
+        initHeroSlideshow();
+        listenToChanges();
+    } catch(e) { console.error(e); }
 }
 
-// Start
-init();
+loadInitialData();
 </script>
 </body>
 </html>
